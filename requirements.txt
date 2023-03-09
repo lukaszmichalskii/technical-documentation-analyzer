@@ -1,0 +1,3 @@
+black==23.1.0
+pylint==v3.0.0a3
+mypy==v0.902
