@@ -3,24 +3,22 @@ PYTHON=$(VENV)/bin/python3
 FILES=$(shell git ls-files '*.py')
 
 build: requirements.txt
-	if [ ! -d $(VENV) ]; then virtualenv -p python3 $(VENV); fi
-	$(PYTHON) -m pip install -r requirements.txt;
+	@if [ ! -d $(VENV) ]; then virtualenv -p python3 $(VENV); fi
+	@$(PYTHON) -m pip install -r requirements.txt;
 
 format:
-	$(PYTHON) -m black .
+	@$(PYTHON) -m black .
 
 run:
-	$(PYTHON) src/main.py
+	@$(PYTHON) src/main.py
 
 test:
-	$(PYTHON) -m unittest discover tests/
+	@$(PYTHON) -m unittest discover tests/
 
 lint:
-	$(PYTHON) -m black --diff --check $(FILES)
-	$(PYTHON) -m mypy --strict $(FILES)
-	$(PYTHON) -m pylint --disable=all --enable=unused-import $(FILES)
+	@$(PYTHON) -m black --diff --check $(FILES)
+	@$(PYTHON) -m mypy --strict $(FILES)
+	@$(PYTHON) -m pylint --disable=all --enable=unused-import $(FILES)
 
 clean:
-	find . | grep -E "(/__pycache__$|\.pyc$|\.pyo$)" | xargs rm -rf; \
-	rm -rf .pytest_cache; \
-	rm -rf .mypy_cache; \
+	rm -rf .mypy_cache
