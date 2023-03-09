@@ -91,4 +91,4 @@ Damian Łukasiewicz <259186@student.pwr.edu.pl>\
 [jira-shield]: https://img.shields.io/badge/Jira-Join-blue
 [jira-url]: https://samsung-kpz.atlassian.net/jira/software/c/projects/SAM/boards/1
 [ci-shield]: https://img.shields.io/badge/CI-passing-green
-[ci-url]: https://github.com/lukaszmichalskii/Samsung-KPZ/actions/workflows/github-ci.yml
+[ci-url]: https://github.com/lukaszmichalskii/Samsung-KPZ/actions/
