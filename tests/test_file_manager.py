@@ -12,12 +12,12 @@ class TestFileManager(unittest.TestCase):
         ).joinpath("resources")
         self.file_manager = FileManager()
 
-    def test_extract_txt(self):
+    def test_extract_txt(self) -> None:
         txt_ = self.resources.joinpath("dir/text2.txt")
         expected = "Text 2 content"
         self.assertEqual(expected, next(self.file_manager.process_file(txt_)))
 
-    def test_read_pdf(self):
+    def test_read_pdf(self) -> None:
         pdf_ = self.resources.joinpath("dir/sample.pdf")
         expected = (
             "A Simple PDF File This is a small demonstration .pdf file - just for use in the Virtual Mechanics "
@@ -42,7 +42,7 @@ class TestFileManager(unittest.TestCase):
                 break
         self.assertEqual(expected, actual)
 
-    def test_read_docx(self):
+    def test_read_docx(self) -> None:
         word_ = self.resources.joinpath("test_500kB.docx")
         expected = (
             "Lorem ipsumLorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc ac faucibus odio.Vestibulum "
