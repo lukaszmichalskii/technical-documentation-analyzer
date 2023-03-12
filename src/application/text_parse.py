@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import abc
+import docx
 import pathlib
 import re
 import typing
+from abc import abstractmethod
 
 import PyPDF2
 
@@ -35,11 +38,23 @@ def remove_escape_chars(string_: str) -> str:
     return re.sub(escape_chars, " ", string_).strip()
 
 
-class PDFExtractor:
+class Decoder(abc.ABC):
+    """
+    Base class for files decoding
+    """
     def __init__(self):
-        self.page_ptr = -1
+        self.head = -1
 
-    def extract_pdf(self, pdf_file: pathlib.Path) -> typing.Generator[str]:
+    @abstractmethod
+    def read(self, file: pathlib.Path):
+        pass
+
+
+class PDFDecoder(Decoder):
+    def __init__(self):
+        super().__init__()
+
+    def read(self, pdf_file: pathlib.Path) -> typing.Generator[str]:
         """
         Decode and extract PDF file content page by page
         Args:
@@ -49,9 +64,35 @@ class PDFExtractor:
         """
         with open(pdf_file, "rb") as pdf_:
             pdf_reader = PyPDF2.PdfReader(pdf_)
-            self.page_ptr += 1
-            while self.page_ptr < len(pdf_reader.pages):
-                yield pdf_reader.pages[self.page_ptr].extract_text()
+            self.head += 1
+            while self.head < len(pdf_reader.pages):
+                yield pdf_reader.pages[self.head].extract_text()
 
     def reset(self):
-        self.page_ptr = 0
+        self.head = 0
+
+
+class WordDecoder(Decoder):
+    """
+    Extractor class providing method for reading .docx based content only.
+    By now class does not take into consideration images, tables and other MS Word structures.
+    """
+    def __init__(self):
+        super().__init__()
+
+    def read(self, word_file: pathlib.Path) -> typing.Generator[str]:
+        """
+        Decode and extract .docx file content paragraph by paragraph.
+        .doc format not supported by now
+        Args:
+            word_file: path to .docx encoded file
+        Returns:
+            decoded paragraph content
+        """
+        docx_ = docx.Document(word_file)
+        self.head += 1
+        while self.head < len(docx_.paragraphs):
+            yield docx_.paragraphs[self.head].text
+
+    def reset(self):
+        self.head = 0
