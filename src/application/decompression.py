@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os.path
 import pathlib
 import shutil
 import tarfile
@@ -28,13 +29,23 @@ def decompress(source: pathlib.Path, destination: pathlib.Path) -> None:
     if zipfile.is_zipfile(source):
         try:
             with zipfile.ZipFile(source) as zip_fd:
-                return zip_fd.extractall(destination)
+                for zip_info in zip_fd.infolist():
+                    if zip_info.is_dir():
+                        continue
+                    zip_info.filename = os.path.basename(zip_info.filename)
+                    zip_fd.extract(zip_info, destination)
+                return
         except zipfile.BadZipFile:
             raise DecompressionError
     elif tarfile.is_tarfile(source):
         try:
             with tarfile.open(source) as tar_fd:
-                return tar_fd.extractall(destination)
+                for tar_info in tar_fd.getmembers():
+                    if tar_info.isdir():
+                        continue
+                    tar_info.name = os.path.basename(tar_info.name)
+                    tar_fd.extract(tar_info, destination)
+                return
         except tarfile.TarError:
             raise DecompressionError
     raise NotSupportedArchiveFormat

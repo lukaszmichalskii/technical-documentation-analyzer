@@ -55,6 +55,10 @@ class Decoder(abc.ABC):
     def reset(self) -> None:
         pass
 
+    @staticmethod
+    def read_all(fd: typing.IO[str | bytes]) -> str:
+        pass
+
 
 class PDFDecoder(Decoder):
     """
@@ -77,6 +81,14 @@ class PDFDecoder(Decoder):
         while self.head < len(pdf_reader.pages):
             yield pdf_reader.pages[self.head].extract_text()
 
+    @staticmethod
+    def read_all(fd: typing.IO[str | bytes]) -> str:
+        text = ""
+        pdf_reader = PyPDF2.PdfReader(fd)
+        for page in pdf_reader.pages:
+            text += page.extract_text()
+        return text
+
     def reset(self) -> None:
         self.head = -1
 
@@ -91,19 +103,27 @@ class DocxDecoder(Decoder):
         super().__init__()
 
     def read(
-        self, docx_file: typing.IO[str | bytes]
+        self, fd: typing.IO[str | bytes]
     ) -> typing.Generator[str, None, None]:
         """
         Decode and extract .docx file content paragraph by paragraph.
         Args:
-            docx_file: path to .docx encoded file
+            fd: path to .docx encoded file
         Returns:
             decoded paragraph content
         """
-        docx_ = docx.Document(docx_file)
+        docx_ = docx.Document(fd)
         self.head += 1
         while self.head < len(docx_.paragraphs):
             yield docx_.paragraphs[self.head].text
+
+    @staticmethod
+    def read_all(fd: typing.IO[str | bytes]) -> str:
+        text = ""
+        docx_ = docx.Document(fd)
+        for paragraph in docx_.paragraphs:
+            text += paragraph.text
+        return text
 
     def reset(self) -> None:
         self.head = -1

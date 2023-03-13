@@ -22,7 +22,7 @@ class TestTextProvider(unittest.TestCase):
     def test_extract_txt(self) -> None:
         txt_ = self.resources.joinpath("dir/text2.txt")
         expected = "Text 2 content"
-        actual = release_buffer(self.text_provider.get_text(txt_))
+        actual = release_buffer(self.text_provider.get_file_chunk(txt_))
         self.assertEqual(expected, actual)
 
     def test_read_pdf(self) -> None:
@@ -39,7 +39,7 @@ class TestTextProvider(unittest.TestCase):
             "boring as watching paint dry. And more text. And more text. And more text. And more text. Boring. "
             "More, a little more text. The end, and just as well."
         )
-        actual = release_buffer(self.text_provider.get_text(pdf_))
+        actual = release_buffer(self.text_provider.get_file_chunk(pdf_))
         self.assertEqual(expected, actual)
         self.assertEqual(-1, self.text_provider.pdf_extractor.head)
 
@@ -127,7 +127,7 @@ class TestTextProvider(unittest.TestCase):
             "semper quis lorem quis, efficitur dignissim ipsum. Ut ac lorem sed turpis imperdiet eleifend sit amet id "
             "sapien."
         )
-        actual = release_buffer(self.text_provider.get_text(word_))
+        actual = release_buffer(self.text_provider.get_file_chunk(word_))
         self.assertEqual(expected, actual)
         self.assertEqual(-1, self.text_provider.docx_extractor.head)
 
@@ -135,5 +135,5 @@ class TestTextProvider(unittest.TestCase):
         dummy_file = pathlib.Path("test.doc")
         self.assertRaises(
             NotSupportedDocumentFormat,
-            lambda: list(self.text_provider.get_text(dummy_file)),
+            lambda: list(self.text_provider.get_file_chunk(dummy_file)),
         )
