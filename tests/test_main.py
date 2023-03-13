@@ -5,10 +5,10 @@ import shutil
 import tempfile
 import unittest
 
-import application.common
-import application.main
 import mock_logger
 import utils
+from src.application.common import Environment
+from src.application.main import main
 
 
 class TestMain(unittest.TestCase):
@@ -27,10 +27,10 @@ class TestMain(unittest.TestCase):
         os.chdir(self.temp)
         try:
             logger = logging.getLogger("SKG")
-            environment = application.common.Environment.from_env(
+            environment = Environment.from_env(
                 {"IN_MEMORY_FILE_SIZE": 1000} if env is None else env
             )
-            return application.main.main(["skg_app.py"] + args, logger, environment)
+            return main(["skg_app.py"] + args, logger, environment)
         except SystemExit as e:
             return e.code
         finally:

@@ -4,15 +4,12 @@ import os.path
 import pathlib
 import shutil
 import sys
-import tarfile
-import zipfile
-
 import typing
 
-from application import common, decompression, logs
-from application.common import STEPS_CHOICES, STEPS, STANDARD_STEPS
-from application.decompression import DecompressionError, NotSupportedArchiveFormat
-from application.file_manager import FileManager
+from src.application import common, decompression, logs
+from src.application.common import STEPS_CHOICES, STEPS, STANDARD_STEPS
+from src.application.decompression import DecompressionError, NotSupportedArchiveFormat
+from src.application.file_manager import FileManager
 
 
 def get_help_epilog():

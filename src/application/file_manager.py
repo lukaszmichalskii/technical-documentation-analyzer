@@ -4,7 +4,7 @@ import os.path
 import pathlib
 import typing
 
-from application.text_provider import TextProvider
+from src.application.text_provider import TextProvider
 
 
 def print_file_content(
