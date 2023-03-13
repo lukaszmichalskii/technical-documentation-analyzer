@@ -35,8 +35,8 @@ def decompress(source: pathlib.Path, destination: pathlib.Path) -> None:
                     zip_info.filename = os.path.basename(zip_info.filename)
                     zip_fd.extract(zip_info, destination)
                 return
-        except zipfile.BadZipFile:
-            raise DecompressionError
+        except zipfile.BadZipFile as e:
+            raise DecompressionError(str(e))
     elif tarfile.is_tarfile(source):
         try:
             with tarfile.open(source) as tar_fd:
@@ -46,12 +46,12 @@ def decompress(source: pathlib.Path, destination: pathlib.Path) -> None:
                     tar_info.name = os.path.basename(tar_info.name)
                     tar_fd.extract(tar_info, destination)
                 return
-        except tarfile.TarError:
-            raise DecompressionError
-    raise NotSupportedArchiveFormat
+        except tarfile.TarError as e:
+            raise DecompressionError(str(e))
+    raise NotSupportedArchiveFormat(f"{source.suffix} archive not supported.")
 
 
-def copyfileobj(source: pathlib.Path, destination: pathlib.Path) -> None:
+def copydir(source: pathlib.Path, destination: pathlib.Path) -> None:
     """
     Copy files from source directory to destination dir.
     If destination dir not exists then create whole tree.

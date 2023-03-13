@@ -102,9 +102,7 @@ class DocxDecoder(Decoder):
     def __init__(self) -> None:
         super().__init__()
 
-    def read(
-        self, fd: typing.IO[str | bytes]
-    ) -> typing.Generator[str, None, None]:
+    def read(self, fd: typing.IO[str | bytes]) -> typing.Generator[str, None, None]:
         """
         Decode and extract .docx file content paragraph by paragraph.
         Args:

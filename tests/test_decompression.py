@@ -3,7 +3,8 @@ import pathlib
 import tempfile
 import unittest
 
-from src.application.decompression import decompress, copyfileobj
+
+from src.application.decompression import decompress, copydir
 from tests.utils import files_in_dir
 
 
@@ -34,6 +35,6 @@ class TestDecompression(unittest.TestCase):
     def test_copyfileobj(self) -> None:
         files_ = self.archives.parent.joinpath("dir")
         with tempfile.TemporaryDirectory(dir=self.archives) as temp:
-            copyfileobj(files_, pathlib.Path(temp))
+            copydir(files_, pathlib.Path(temp))
             actual = files_in_dir(pathlib.Path(temp))
             self.assertEqual(self.expected_dir, sorted(actual))
