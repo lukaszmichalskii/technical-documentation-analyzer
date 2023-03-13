@@ -1,17 +1,16 @@
 from __future__ import annotations
 
 import abc
-import docx
-import pathlib
 import re
 import typing
 from abc import abstractmethod
 
 import PyPDF2
+import docx
 
 
 def read_file(
-    file_obj: typing.IO[str], chunk_size: int = 1024 * 32
+    file_obj: typing.IO[str | bytes], chunk_size: int = 1024 * 32
 ) -> typing.Generator[str, None, None]:
     """
     Read file content to memory buffer
@@ -49,7 +48,7 @@ class Decoder(abc.ABC):
         self.head = -1
 
     @abstractmethod
-    def read(self, file: pathlib.Path) -> typing.Generator[str, None, None]:
+    def read(self, fd: typing.IO[str | bytes]) -> typing.Generator[str, None, None]:
         pass
 
     @abstractmethod
@@ -65,25 +64,24 @@ class PDFDecoder(Decoder):
     def __init__(self) -> None:
         super().__init__()
 
-    def read(self, pdf_file: pathlib.Path) -> typing.Generator[str, None, None]:
+    def read(self, fd: typing.IO[str | bytes]) -> typing.Generator[str, None, None]:
         """
         Decode and extract PDF file content page by page
         Args:
-            pdf_file: path to PDF encoded file
+            fd: PDF file descriptor
         Returns:
             decoded page content
         """
-        with open(pdf_file, "rb") as pdf_:
-            pdf_reader = PyPDF2.PdfReader(pdf_)
-            self.head += 1
-            while self.head < len(pdf_reader.pages):
-                yield pdf_reader.pages[self.head].extract_text()
+        pdf_reader = PyPDF2.PdfReader(fd)
+        self.head += 1
+        while self.head < len(pdf_reader.pages):
+            yield pdf_reader.pages[self.head].extract_text()
 
     def reset(self) -> None:
-        self.head = 0
+        self.head = -1
 
 
-class WordDecoder(Decoder):
+class DocxDecoder(Decoder):
     """
     Decoder class providing method for reading .docx based content only.
     By now class does not take into consideration images, tables and other MS Word structures.
@@ -92,19 +90,20 @@ class WordDecoder(Decoder):
     def __init__(self) -> None:
         super().__init__()
 
-    def read(self, word_file: pathlib.Path) -> typing.Generator[str, None, None]:
+    def read(
+        self, docx_file: typing.IO[str | bytes]
+    ) -> typing.Generator[str, None, None]:
         """
         Decode and extract .docx file content paragraph by paragraph.
-        .doc format not supported by now
         Args:
-            word_file: path to .docx encoded file
+            docx_file: path to .docx encoded file
         Returns:
             decoded paragraph content
         """
-        docx_ = docx.Document(word_file)
+        docx_ = docx.Document(docx_file)
         self.head += 1
         while self.head < len(docx_.paragraphs):
             yield docx_.paragraphs[self.head].text
 
     def reset(self) -> None:
-        self.head = 0
+        self.head = -1

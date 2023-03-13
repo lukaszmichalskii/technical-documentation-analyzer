@@ -6,7 +6,7 @@ from src.application.text_parse import (
     read_file,
     remove_escape_chars,
     PDFDecoder,
-    WordDecoder,
+    DocxDecoder,
 )
 
 
@@ -15,16 +15,16 @@ class TestTextParse(unittest.TestCase):
         self.resources = pathlib.Path(
             os.path.dirname(os.path.abspath(__file__))
         ).joinpath("resources")
-        self.pdf_extractor = PDFDecoder()
-        self.word_extractor = WordDecoder()
+        self.pdf_decoder = PDFDecoder()
+        self.docx_decoder = DocxDecoder()
 
     def test_read_file_chunk(self) -> None:
         file_ = self.resources.joinpath("dir/text1.txt")
         bytes_ = 16
         expected = "9000817973713744"
-        with open(file_, "r") as f:
-            content_ = read_file(f, chunk_size=bytes_)
-            self.assertEqual(expected, next(content_))
+        with open(file_, "r") as fd:
+            content = read_file(fd, chunk_size=bytes_)
+            self.assertEqual(expected, next(content))
 
     def test_remove_escape_chars(self) -> None:
         string_ = "    Text  \t to clean\n \t example.  "
@@ -43,7 +43,8 @@ class TestTextParse(unittest.TestCase):
  And more text. And more text. 
  And more text. And more text. And more text. And more text. And more 
  text. And more text. And more text. Even more. Continued on page 2 ..."""
-        self.assertEqual(expected, next(self.pdf_extractor.read(pdf_)))
+        with open(pdf_, "rb") as fd:
+            self.assertEqual(expected, next(self.pdf_decoder.read(fd)))
 
     def test_read_docx_files(self) -> None:
         docx_ = self.resources.joinpath("test_500kB.docx")
@@ -57,7 +58,8 @@ class TestTextParse(unittest.TestCase):
             "felis tristique fringilla. Morbi sit amet tortor quis risus auctor condimentum. Morbi in "
             "ullamcorper elit. Nulla iaculis tellus sit amet mauris tempus fringilla."
         )
-        self.word_extractor.head = (
+        self.docx_decoder.head = (
             3  # move head to center of document to read only one paragraph
         )
-        self.assertEqual(expected, next(self.word_extractor.read(docx_)))
+        with open(docx_, "rb") as fd:
+            self.assertEqual(expected, next(self.docx_decoder.read(fd)))
