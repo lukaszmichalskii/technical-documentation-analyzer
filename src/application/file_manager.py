@@ -23,13 +23,19 @@ class FileManager:
                 files.append(os.path.join(root, f))
         return files
 
-    def decode_text(self, file: pathlib.Path) -> str | typing.Generator[str, None, None]:
+    def decode_text(
+        self, file: pathlib.Path
+    ) -> str | typing.Generator[str, None, None]:
         if os.path.getsize(file) < self.file_size_limit:
-                return self.text_provider.get_file_content(file)
+            return self.text_provider.get_file_content(file)
         return self.text_provider.get_file_chunk(file)
 
-    def save_parsed_text(self, destination: pathlib.Path, parsed_text: str | typing.Generator[str, None, None]) -> None:
-        with open(destination, 'w') as fd:
+    def save_parsed_text(
+        self,
+        destination: pathlib.Path,
+        parsed_text: str | typing.Generator[str, None, None],
+    ) -> None:
+        with open(destination, "w") as fd:
             if isinstance(parsed_text, types.GeneratorType):
                 for text in parsed_text:
                     fd.write(text)

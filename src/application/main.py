@@ -61,14 +61,10 @@ def run_app(
         logger.info(
             f"Decompressing files from {str(techdoc_path)} to {str(extracted)}..."
         )
-        decompression.decompress(
-            techdoc_path, extracted
-        )
+        decompression.decompress(techdoc_path, extracted)
 
     def copy_step() -> None:
-        logger.info(
-            f"Nothing to be decompressed."
-        )
+        logger.info(f"Nothing to be decompressed.")
         if techdoc_path.is_dir():
             decompression.copydir(techdoc_path, output.joinpath())
         else:
@@ -82,9 +78,13 @@ def run_app(
                 decoded_text = file_manager.decode_text(file)
                 logger.info(f"{file} file has been parsed successfully.")
                 file_manager.save_parsed_text(
-                    decoded_path(output).joinpath(file.name.split('.')[0] + common.RESULTS_FORMAT), decoded_text)
+                    decoded_path(output).joinpath(
+                        file.name.split(".")[0] + common.RESULTS_FORMAT
+                    ),
+                    decoded_text,
+                )
             except NotSupportedDocumentFormat as e:
-                logger.warning(f'Skipping file {file}. {str(e)}')
+                logger.warning(f"Skipping file {file}. {str(e)}")
                 continue
 
     if common.get_current_os() != "linux":
@@ -105,11 +105,18 @@ def run_app(
         output.mkdir()
     if STEPS.DECOMPRESS in args.only:
         try:
-            if techdoc_path.is_dir() or techdoc_path.suffix in common.SUPPORTED_DOCUMENTS:
+            if (
+                techdoc_path.is_dir()
+                or techdoc_path.suffix in common.SUPPORTED_DOCUMENTS
+            ):
                 copy_step()
             else:
                 decompress_step()
-        except (DecompressionError, NotSupportedArchiveFormat, NotSupportedDocumentFormat) as e:
+        except (
+            DecompressionError,
+            NotSupportedArchiveFormat,
+            NotSupportedDocumentFormat,
+        ) as e:
             logger.error(str(e))
             logger.info("App finished with exit code 1")
             return 1

@@ -40,7 +40,9 @@ class TextProvider:
             decoded and cleaned text from provided file.
         """
         if not self.supported_format(filepath.suffix):
-            raise NotSupportedDocumentFormat(f'Document format {filepath.suffix} is not supported.')
+            raise NotSupportedDocumentFormat(
+                f"Document format {filepath.suffix} is not supported."
+            )
         if filepath.suffix == ".pdf":
             with open(filepath, "rb") as pdf_:
                 return self._read_all(pdf_, self.pdf_extractor.read_all)
@@ -72,7 +74,9 @@ class TextProvider:
             decoded and cleaned text chunks from provided file.
         """
         if not self.supported_format(filepath.suffix):
-            raise NotSupportedDocumentFormat(f'Document format {filepath.suffix} is not supported.')
+            raise NotSupportedDocumentFormat(
+                f"Document format {filepath.suffix} is not supported."
+            )
         if filepath.suffix == ".pdf":
             with open(filepath, "rb") as pdf_:
                 while True:
