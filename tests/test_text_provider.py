@@ -19,12 +19,6 @@ class TestTextProvider(unittest.TestCase):
         ).joinpath("resources")
         self.text_provider = TextProvider()
 
-    def test_extract_txt(self) -> None:
-        txt_ = self.resources.joinpath("dir/text2.txt")
-        expected = "Text 2 content"
-        actual = release_buffer(self.text_provider.get_file_chunk(txt_))
-        self.assertEqual(expected, actual)
-
     def test_read_pdf(self) -> None:
         pdf_ = self.resources.joinpath("dir/sample.pdf")
         expected = (
@@ -131,9 +125,16 @@ class TestTextProvider(unittest.TestCase):
         self.assertEqual(expected, actual)
         self.assertEqual(-1, self.text_provider.docx_extractor.head)
 
-    def test_get_text_not_supported_format_exception(self):
+    def test_decode_text_doc_not_supported_format_exception(self):
         dummy_file = pathlib.Path("test.doc")
         self.assertRaises(
             NotSupportedDocumentFormat,
             lambda: list(self.text_provider.get_file_chunk(dummy_file)),
+        )
+
+    def test_decode_text_txt_not_supported_format_exception(self) -> None:
+        txt_ = self.resources.joinpath("dir/text2.txt")
+        self.assertRaises(
+            NotSupportedDocumentFormat,
+            lambda: list(self.text_provider.get_file_chunk(txt_)),
         )

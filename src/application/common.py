@@ -10,6 +10,10 @@ STEPS = enum(DECOMPRESS="decompress", DECODE="decode")
 STEPS_CHOICES = [STEPS.DECOMPRESS, STEPS.DECODE]
 STANDARD_STEPS = [STEPS.DECOMPRESS, STEPS.DECODE]
 
+SUPPORTED_ARCHIVES = {".zip", ".tar.xz", ".xz"}
+SUPPORTED_DOCUMENTS = {".docx", ".pdf"}
+RESULTS_FORMAT = ".txt"
+
 
 def get_current_os() -> str:
     if is_linux_os():

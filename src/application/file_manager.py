@@ -2,26 +2,10 @@ from __future__ import annotations
 
 import os.path
 import pathlib
+import types
 import typing
 
 from src.application.text_provider import TextProvider
-
-
-def print_file_content(
-    filename, text: str | typing.Generator[str, None, None], chunk: bool = False
-):
-    # helper function for debugging purposes
-    if chunk:
-        print("-" * 50)
-        print(f"{filename}:")
-        for t in text:
-            print(t, sep="")
-        print("-" * 50)
-        return
-    print("-" * 50)
-    print(f"{filename}:")
-    print(text)
-    print("-" * 50)
 
 
 class FileManager:
@@ -34,14 +18,20 @@ class FileManager:
         directory: pathlib.Path,
     ) -> typing.List[str | bytes | typing.Any] | None:
         files = []
-        for _, _, filenames in os.walk(directory):
-            files.extend(filenames)
+        for root, dir, file in os.walk(directory):
+            for f in file:
+                files.append(os.path.join(root, f))
         return files
 
-    def get_text(self, file: pathlib.Path):
+    def decode_text(self, file: pathlib.Path) -> str | typing.Generator[str, None, None]:
         if os.path.getsize(file) < self.file_size_limit:
-            text = self.text_provider.get_file_content(file)
-            print_file_content(file.name, text)
-            return
-        text = self.text_provider.get_file_chunk(file)
-        print_file_content(file.name, text, chunk=True)
+                return self.text_provider.get_file_content(file)
+        return self.text_provider.get_file_chunk(file)
+
+    def save_parsed_text(self, destination: pathlib.Path, parsed_text: str | typing.Generator[str, None, None]) -> None:
+        with open(destination, 'w') as fd:
+            if isinstance(parsed_text, types.GeneratorType):
+                for text in parsed_text:
+                    fd.write(text)
+            else:
+                fd.write(parsed_text)

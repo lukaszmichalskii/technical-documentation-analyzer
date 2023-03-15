@@ -4,13 +4,12 @@ import logging
 import pathlib
 import typing
 
+from src.application import common
 from src.application.text_parse import (
     remove_escape_chars,
-    read_file,
     PDFDecoder,
     DocxDecoder,
 )
-
 
 LOGGER = logging.getLogger("SKG")
 
@@ -25,7 +24,7 @@ class TextProvider:
     """
 
     def __init__(self) -> None:
-        self.supported_formats = [".docx", ".pdf", ".txt"]
+        self.supported_formats = common.SUPPORTED_DOCUMENTS
         self.pdf_extractor = PDFDecoder()
         self.docx_extractor = DocxDecoder()
 
@@ -34,18 +33,17 @@ class TextProvider:
 
     def get_file_content(self, filepath: pathlib.Path) -> str:
         """
-        Read whole single .pdf, .docx, and standard .txt file to program memory
+        Read whole single .pdf, .docx file to program memory
         Args:
             filepath: path to file
         Returns:
             decoded and cleaned text from provided file.
         """
+        if not self.supported_format(filepath.suffix):
+            raise NotSupportedDocumentFormat(f'Document format {filepath.suffix} is not supported.')
         if filepath.suffix == ".pdf":
             with open(filepath, "rb") as pdf_:
                 return self._read_all(pdf_, self.pdf_extractor.read_all)
-        elif filepath.suffix == ".txt":
-            with open(filepath, "r") as txt_:
-                return remove_escape_chars(txt_.read())
         elif filepath.suffix == ".docx":
             with open(filepath, "rb") as docx_:
                 return self._read_all(docx_, self.docx_extractor.read_all)
@@ -74,8 +72,7 @@ class TextProvider:
             decoded and cleaned text chunks from provided file.
         """
         if not self.supported_format(filepath.suffix):
-            LOGGER.error(f"Document {filepath.suffix} format is not supported.")
-            raise NotSupportedDocumentFormat
+            raise NotSupportedDocumentFormat(f'Document format {filepath.suffix} is not supported.')
         if filepath.suffix == ".pdf":
             with open(filepath, "rb") as pdf_:
                 while True:
@@ -83,13 +80,6 @@ class TextProvider:
                         yield remove_escape_chars(next(self.pdf_extractor.read(pdf_)))
                     except StopIteration:
                         self.pdf_extractor.reset()
-                        break
-        elif filepath.suffix == ".txt":
-            with open(filepath, "r") as fd:
-                while True:
-                    try:
-                        yield remove_escape_chars(next(read_file(fd)))
-                    except StopIteration:
                         break
         elif filepath.suffix == ".docx":
             with open(filepath, "rb") as docx_:

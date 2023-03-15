@@ -40,17 +40,25 @@ class TestMain(unittest.TestCase):
         zipfile_ = self.archives.joinpath("zipfile.zip")
         self.assertEqual(0, self.main(["--techdoc_path", str(zipfile_)]))
         self.assertEqual(
-            sorted(["lorem-ipsum.pdf", "text1.txt", "text2.txt"]),
+            sorted(["lorem-ipsum.pdf", "lorem-ipsum.txt", "text1.txt", "text2.txt"]),
             sorted(utils.files_in_dir(pathlib.Path(self.temp).joinpath("results"))),
         )
 
     def test_decompress_tar_xz_archive(self):
         tarfile_ = self.archives.joinpath("tarfile.tar.xz")
-        self.assertEqual(0, self.main(["--techdoc_path", str(tarfile_)]))
-        self.assertEqual(
-            sorted(["lorem-ipsum.pdf", "text1.txt", "text2.txt"]),
-            sorted(utils.files_in_dir(pathlib.Path(self.temp).joinpath("results"))),
-        )
+        with mock_logger.MockLogger() as logger:
+            self.assertEqual(0, self.main(["--techdoc_path", str(tarfile_)]))
+            self.assertEqual(
+                sorted(["lorem-ipsum.pdf", "lorem-ipsum.txt", "text1.txt", "text2.txt"]),
+                sorted(utils.files_in_dir(pathlib.Path(self.temp).joinpath("results"))),
+            )
+            self.assertIn(
+                (
+                    'WARNING',
+                    'Skipping file results/extracted/text1.txt. Document format .txt is not supported.'
+                ),
+                logger.messages
+            )
 
     def test_decompress_not_supported_archive(self):
         archive_ = self.archives.joinpath("archive.7z")
@@ -59,13 +67,32 @@ class TestMain(unittest.TestCase):
             self.assertIn(("ERROR", ".7z archive not supported."), logger.messages)
 
     def test_just_copy_file(self):
-        file = self.archives.parent.joinpath("dir/text2.txt")
+        file = self.archives.parent.joinpath("dir/sample.pdf")
         with mock_logger.MockLogger() as logger:
             self.assertEqual(0, self.main(["--techdoc_path", str(file)]))
             self.assertIn(
                 (
                     "INFO",
-                    "Nothing to be decompressed, copying file text2.txt to results",
+                    "Nothing to be decompressed.",
                 ),
                 logger.messages,
+            )
+            self.assertIn(
+                (
+                    'INFO',
+                    'results/sample.pdf file has been parsed successfully.'
+                ),
+                logger.messages
+            )
+
+    def test_txt_not_supported(self):
+        file = self.archives.parent.joinpath("dir/text2.txt")
+        with mock_logger.MockLogger() as logger:
+            self.assertEqual(1, self.main(["--techdoc_path", str(file)]))
+            self.assertIn(
+                (
+                    'ERROR',
+                    '.txt archive not supported.'
+                ),
+                logger.messages
             )
