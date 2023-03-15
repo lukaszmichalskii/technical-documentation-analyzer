@@ -17,7 +17,7 @@ class TestMain(unittest.TestCase):
         self.temp = tempfile.mkdtemp()
         self.archives = pathlib.Path(
             os.path.dirname(os.path.abspath(__file__))
-        ).joinpath("resources/archives")
+        ).joinpath("../resources/archives")
 
     def tearDown(self) -> None:
         shutil.rmtree(self.temp)

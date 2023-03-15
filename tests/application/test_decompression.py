@@ -12,7 +12,7 @@ class TestDecompression(unittest.TestCase):
     def setUp(self) -> None:
         self.archives = pathlib.Path(
             os.path.dirname(os.path.abspath(__file__))
-        ).joinpath("resources/archives")
+        ).joinpath("../resources/archives")
         self.expected_dir = sorted(
             ["lorem-ipsum.pdf", "text1.txt", "sample.pdf", "text2.txt"]
         )

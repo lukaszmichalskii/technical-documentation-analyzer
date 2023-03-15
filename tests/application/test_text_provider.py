@@ -16,7 +16,7 @@ class TestTextProvider(unittest.TestCase):
     def setUp(self) -> None:
         self.resources = pathlib.Path(
             os.path.dirname(os.path.abspath(__file__))
-        ).joinpath("resources")
+        ).joinpath("../resources")
         self.text_provider = TextProvider()
 
     def test_read_pdf(self) -> None:

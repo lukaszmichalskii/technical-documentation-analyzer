@@ -14,7 +14,7 @@ class TestTextParse(unittest.TestCase):
     def setUp(self) -> None:
         self.resources = pathlib.Path(
             os.path.dirname(os.path.abspath(__file__))
-        ).joinpath("resources")
+        ).joinpath("../resources")
         self.pdf_decoder = PDFDecoder()
         self.docx_decoder = DocxDecoder()
 
