@@ -139,7 +139,7 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
         "--techdoc_path",
         type=str,
         required=True,
-        help="path to the compressed documentation file, directory with already decompressed files or single file.",
+        help="path to the compressed documentation file/s (.zip and .tar.xz compressed only), directory with already decompressed files or single file (supported document formats: .pdf, .docx)",
         metavar="path",
     )
     parser.add_argument(
