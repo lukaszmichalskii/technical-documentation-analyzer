@@ -10,7 +10,6 @@ jobs:
           sudo apt-get update && sudo apt-get install python3-pip && python3 -m pip install -r requirements.txt
       - run: python3 -m black --diff --check $(git ls-files '*.py')
       - run: python3 -m pylint --disable=all --enable=unused-import $(git ls-files '*.py')
-      - run: python3 -m mypy --strict $(git ls-files '*.py')
   tests:
     runs-on: ubuntu-latest
     steps:

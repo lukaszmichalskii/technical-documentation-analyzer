@@ -1,3 +1,4 @@
 black==23.1.0
 pylint==v3.0.0a3
-mypy==v0.902
+pypdf2~=3.0.1
+python-docx~=0.8.11

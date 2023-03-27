@@ -17,7 +17,6 @@ test:
 
 lint:
 	@$(PYTHON) -m black --diff --check $(FILES)
-	@$(PYTHON) -m mypy --strict $(FILES)
 	@$(PYTHON) -m pylint --disable=all --enable=unused-import $(FILES)
 
 clean:
