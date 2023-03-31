@@ -5,12 +5,15 @@ import pathlib
 import shutil
 import sys
 import typing
+import stardog
 
 from src.application import common, decompression, logs
 from src.application.common import STEPS_CHOICES, STEPS, STANDARD_STEPS
 from src.application.decompression import DecompressionError, NotSupportedArchiveFormat
 from src.application.file_manager import FileManager
 from src.application.text_provider import NotSupportedDocumentFormat
+from src.database.stardog_connection import StardogConnection
+from src.database.stardog_admin_connection import StardogAdminConnection
 
 
 def get_help_epilog():
@@ -32,6 +35,10 @@ Examples:
     python skg_app.py --techdoc_path example.pdf --output results_dir --only decode
     Decode only files
     python skg_app.py --techdoc_path examples/ --output results_dir --only decode
+    Execute the query from the file on the sample data from the database 
+    python skg_app.py --query_path example.sparql
+    Upload the data to the new database
+    python skg_app.py --ttl_path example.ttf --db_name example
     
 More info: <confluence manual url>"""
 
@@ -94,6 +101,28 @@ def run_app(
     logger.info(
         f"pythonApp: {sys.executable} argv: {argv} {environment.to_info_string()}"
     )
+    if args.query_path is not None:
+        with StardogConnection("catalog") as conn:
+            query_file = open(args.query_path, "r")
+            result = conn.select(
+                query_file.read(), content_type=stardog.content_types.SPARQL_JSON
+            )
+            logger.info(f"Result of query: {result}")
+        return 0
+
+    if args.ttl_path is not None:
+        with StardogAdminConnection() as admin_conn:
+            database = admin_conn.new_database(args.db_name)
+            logger.info(f"Created new database with name: {args.db_name}")
+            with StardogConnection(args.db_name) as conn:
+                conn.begin()
+                conn.add(stardog.content.File(args.ttl_path))
+                results = conn.select("select * { ?a ?p ?o }")
+                logger.info(f"Uploaded data: {results}")
+            database.drop()
+            logger.info(f"Shut down of database with name: {args.db_name}")
+        return 0
+
     if os.path.exists(args.output) and os.listdir(args.output):
         logger.error(f"Output directory {args.output} is not empty")
         logger.info("App finished with exit code 1")
@@ -138,8 +167,8 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
     parser.add_argument(
         "--techdoc_path",
         type=str,
-        required=True,
-        help="path to the compressed documentation file/s (.zip and .tar.xz compressed only), directory with already decompressed files or single file (supported document formats: .pdf, .docx)",
+        required=False,
+        help="path to the compressed documentation file, directory with already decompressed files or single file.",
         metavar="path",
     )
     parser.add_argument(
@@ -160,6 +189,17 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
         metavar="output_folder",
         default="results",
         help="specifies directory, where results should be saved. Has to be empty",
+    )
+    parser.add_argument(
+        "--query_path",
+        type=str,
+        help="specifies path to the file with query to execute",
+    )
+    parser.add_argument(
+        "--ttl_path", type=str, help="specifies path to the file in the RDF format"
+    )
+    parser.add_argument(
+        "--db_name", type=str, default="db", help="specifies new database name"
     )
     parser.epilog = get_help_epilog()
     return run_app(parser.parse_args(argv[1:]), argv, logger, environment)
