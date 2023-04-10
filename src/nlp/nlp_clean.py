@@ -37,3 +37,38 @@ def remove_stop_words_and_punct(text: str, print_text: bool = False) -> str:
             result_ls.append(str(token))
     result_str = ' '.join(result_ls)
     return result_str
+
+
+def remove_duplicates(tup, tup_pos):
+    """
+    Recognize 'object' (in SVO the O) position to avoid redundant memory allocation in graph assembly
+    Args:
+        tup: precomputed SVO list
+        tup_pos: position to comparison
+    Returns:
+        Unique list of SVO triples
+    """
+    check_val = set()
+    result = []
+
+    for i in tup:
+        if i[tup_pos] not in check_val:
+            result.append(i)
+            check_val.add(i[tup_pos])
+
+    return result
+
+
+def remove_literals(tup_ls):
+    """
+    Get rid of literals from SVO triple list in further RDF assembly
+    Args:
+        tup_ls: list of SVO triples
+    Returns:
+        List without literal objects (in SVO the O)
+    """
+    clean_tup_ls = []
+    for entry in tup_ls:
+        if not entry[2].isdigit():
+            clean_tup_ls.append(entry)
+    return clean_tup_ls
