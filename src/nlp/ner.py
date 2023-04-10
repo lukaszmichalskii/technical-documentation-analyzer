@@ -24,7 +24,6 @@ def add_layer(tup_ls):
     svo_tup_ls = []
 
     for tup in tup_ls:
-
         if tup[3]:
             svo_tup = create_svo_triples(tup[3])
             svo_tup_ls.extend(svo_tup)
@@ -81,7 +80,14 @@ def create_word_vectors(tup_ls):
             new_tup = (tup[0], tup[1], tup[2], tup[3], tup[4], tup[5], doc.vector)
         else:
             new_tup = (
-            tup[0], tup[1], tup[2], tup[3], tup[4], tup[5], np.random.uniform(low=-1.0, high=1.0, size=(300,)))
+                tup[0],
+                tup[1],
+                tup[2],
+                tup[3],
+                tup[4],
+                tup[5],
+                np.random.uniform(low=-1.0, high=1.0, size=(300,)),
+            )
         new_tup_ls.append(new_tup)
 
     return new_tup_ls
