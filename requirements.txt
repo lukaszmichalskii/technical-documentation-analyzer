@@ -2,3 +2,4 @@ black==23.1.0
 pylint==v3.0.0a3
 pypdf2~=3.0.1
 python-docx~=0.8.11
+spacy~=3.5.1
