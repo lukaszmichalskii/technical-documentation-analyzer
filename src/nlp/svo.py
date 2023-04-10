@@ -1,11 +1,16 @@
 from spacy import tokens
 
 from src.nlp.build import nlp
-from src.nlp.nlp_clean import remove_stop_words_and_punct, remove_special_characters, remove_duplicates, remove_literals
+from src.nlp.nlp_clean import (
+    remove_stop_words_and_punct,
+    remove_special_characters,
+    remove_duplicates,
+    remove_literals,
+)
 
 SUBJECTS = ["nsubj", "nsubjpass", "csubj", "csubjpass", "agent", "expl"]
-VERBS = ['ROOT', 'advcl']
-OBJECTS = ["dobj", "dative", "attr", "oprd", 'pobj']
+VERBS = ["ROOT", "advcl"]
+OBJECTS = ["dobj", "dative", "attr", "oprd", "pobj"]
 
 
 def create_svo_lists(doc: tokens.doc.Doc, debug: bool = False):
@@ -31,9 +36,9 @@ def create_svo_lists(doc: tokens.doc.Doc, debug: bool = False):
             object_ls.append((token.lower_, token.idx))
 
     if debug:
-        print('SUBJECTS: ', subject_ls)
-        print('VERBS: ', verb_ls)
-        print('OBJECTS: ', object_ls)
+        print("SUBJECTS: ", subject_ls)
+        print("VERBS: ", verb_ls)
+        print("OBJECTS: ", object_ls)
 
     return subject_ls, verb_ls, object_ls
 

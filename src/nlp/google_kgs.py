@@ -18,20 +18,21 @@ from typing import List, Tuple, Any, Dict
 REQUEST_DEPTH_LIMIT = 100000
 
 # filters
-ROOT = 'itemListElement'
-DESC_KEY = 'detailedDescription'
-NER = '@type'
-RESULT_KEY = 'result'
-URL_KEY = 'url'
-ARTICLE_BODY = 'articleBody'
+ROOT = "itemListElement"
+DESC_KEY = "detailedDescription"
+NER = "@type"
+RESULT_KEY = "result"
+URL_KEY = "url"
+ARTICLE_BODY = "articleBody"
 
 
 class GoogleSearchError(Exception):
     pass
 
 
-def google_search(query, limit=1, indent=True, ner=True) -> Tuple[
-                                                                List[Any], List[Any], List[Any]] | Dict[Any]:
+def google_search(
+    query, limit=1, indent=True, ner=True
+) -> Tuple[List[Any], List[Any], List[Any]] | Dict[Any]:
     """
     Search Google Knowledge Graph utility method
     Args:
@@ -42,7 +43,7 @@ def google_search(query, limit=1, indent=True, ner=True) -> Tuple[
     Returns:
         Response from graph in raw json form or tuple ready to assembly in NER NLP
     """
-    api_key = os.environ.get('API_KEY')
+    api_key = os.environ.get("API_KEY")
     params = google_api_params(query=query, api_key=api_key, limit=limit, indent=indent)
     url = build_url(params)
     response = do_GET(url)
@@ -54,16 +55,16 @@ def google_search(query, limit=1, indent=True, ner=True) -> Tuple[
 
 def google_api_params(**kwargs) -> Dict[str, Any]:
     return {
-        'query': kwargs.get('query'),
-        'limit': int(kwargs.get('limit', 10)),
-        'indent': kwargs.get('indent', True),
-        'key': kwargs.get('api_key'),
+        "query": kwargs.get("query"),
+        "limit": int(kwargs.get("limit", 10)),
+        "indent": kwargs.get("indent", True),
+        "key": kwargs.get("api_key"),
     }
 
 
 def build_url(params: Dict[str, Any]) -> str:
-    service_url = 'https://kgsearch.googleapis.com/v1/entities:search'
-    url = service_url + '?' + urllib.parse.urlencode(params)
+    service_url = "https://kgsearch.googleapis.com/v1/entities:search"
+    url = service_url + "?" + urllib.parse.urlencode(params)
     return url
 
 
@@ -92,21 +93,21 @@ def named_entities(element, storage_reference) -> None:
     try:
         storage_reference.append(element[RESULT_KEY][NER])
     except Exception:
-        storage_reference.append('')
+        storage_reference.append("")
 
 
 def find_url(element, storage_reference) -> None:
     try:
         storage_reference.append(element[RESULT_KEY][DESC_KEY][URL_KEY])
     except Exception:
-        storage_reference.append('')
+        storage_reference.append("")
 
 
 def description(element, storage_reference) -> None:
     try:
         storage_reference.append(element[RESULT_KEY][DESC_KEY][ARTICLE_BODY])
     except Exception:
-        storage_reference.append('')
+        storage_reference.append("")
 
 
 def help_() -> str:
@@ -134,35 +135,37 @@ Examples:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        '-q',
-        '--query',
+        "-q",
+        "--query",
         type=str,
         required=True,
-        help="Keyword to search in google knowledge graph API"
+        help="Keyword to search in google knowledge graph API",
     )
     parser.add_argument(
-        '--ner',
-        action="store_true",
-        help="Classify data from json response to NER"
+        "--ner", action="store_true", help="Classify data from json response to NER"
     )
     parser.add_argument(
-        '--force',
-        action="store_true",
-        help="Force query even if free tier exceeded."
+        "--force", action="store_true", help="Force query even if free tier exceeded."
     )
     parser.epilog = help_()
     args = parser.parse_args()
 
-    limit = int(os.environ.get('LIMIT', 1))
+    limit = int(os.environ.get("LIMIT", 1))
     if limit >= REQUEST_DEPTH_LIMIT and not args.force:
-        print('Google Knowledge Graph API free tier exceeded. Use "--force" to override.')
+        print(
+            'Google Knowledge Graph API free tier exceeded. Use "--force" to override.'
+        )
         return 2
-    api_key = os.environ.get('API_KEY')
+    api_key = os.environ.get("API_KEY")
     if api_key is None:
-        print('API_KEY environment variable required for Google Knowledge Graph requests')
+        print(
+            "API_KEY environment variable required for Google Knowledge Graph requests"
+        )
         return 3
     if args.force:
-        print('Free tier override, service might work incorrectly e.g. block account for spamming (bot protection)')
+        print(
+            "Free tier override, service might work incorrectly e.g. block account for spamming (bot protection)"
+        )
 
     try:
         response = google_search(args.query, limit, ner=args.ner)
@@ -173,5 +176,5 @@ def main() -> int:
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

@@ -11,7 +11,7 @@ def remove_special_characters(text: str) -> str:
     Returns:
         Clean text
     """
-    regex = re.compile(r'[\n\r\t]')
+    regex = re.compile(r"[\n\r\t]")
     clean_text = regex.sub(" ", text)
     return clean_text
 
@@ -32,10 +32,10 @@ def remove_stop_words_and_punct(text: str, print_text: bool = False) -> str:
     for token in rsw_doc:
         if print_text:
             print(token, token.is_stop)
-            print('--------------')
+            print("--------------")
         if not token.is_stop and not token.is_punct:
             result_ls.append(str(token))
-    result_str = ' '.join(result_ls)
+    result_str = " ".join(result_ls)
     return result_str
 
 
