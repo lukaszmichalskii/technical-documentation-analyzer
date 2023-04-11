@@ -1,7 +1,5 @@
 import stardog
-from dotenv import find_dotenv, load_dotenv
 from src.application import logs
-import os
 
 
 class StardogConnection:
@@ -9,32 +7,24 @@ class StardogConnection:
     Class for initializing connection with Stardog database based on environment parameters
     """
 
-    def __init__(self, db_name):
-        load_dotenv(find_dotenv())
-        self.endpoint = os.environ.get("STARDOG_ENDPOINT")
-        self.username = os.environ.get("STARDOG_USERNAME")
-        self.password = os.environ.get("STARDOG_PASSWORD")
+    def __init__(self, config):
+        self.endpoint = config.STARDOG_ENDPOINT
+        self.username = config.STARDOG_USERNAME
+        self.password = config.STARDOG_PASSWORD
         self.logger = logs.setup_logger()
-        self.connection = self.connect(db_name)
+        self.connection = None
 
-    def connect(self, db_name):
-        try:
-            return stardog.Connection(
-                db_name, self.endpoint, self.username, self.password
-            )
-        except stardog.exceptions.StardogException as exception:
-            self.logger.error(
-                f"An error while connecting to the database. "
-                f"Database name: {db_name}, "
-                f"Username: {self.username}, "
-                f"Password: {self.password}, "
-                f"Endpoint: {self.endpoint}"
-                f"Exception: {exception}"
-            )
-
-    def __enter__(self):
+    def __enter__(self, db_name=None, is_admin=False):
+        self.logger.info(f"Connecting to database {db_name}")
+        if is_admin:
+            self.connection = stardog.Admin(self.endpoint, self.username, self.password)
+            self.logger.info(f"Successfully established admin connection")
+        else:
+            if not db_name:
+                raise ValueError("db_name must be provided for non-admin connection")
+            self.connection = stardog.Connection(db_name, self.endpoint, self.username, self.password)
+            self.logger.info(f"Successfully connected to database {db_name}")
         return self.connection
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.connection.close()
-        return True
