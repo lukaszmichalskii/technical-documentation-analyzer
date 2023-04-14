@@ -44,10 +44,10 @@ def run_app(
         return 0
 
     if args.ttl_path is not None:
-        with StardogConnection(Config, args.db_name) as admin_conn:
+        with StardogConnection(Config, is_admin=True) as admin_conn:
             database = admin_conn.new_database(args.db_name)
             logger.info(f"Created new database with name: {args.db_name}")
-            with StardogConnection(args.db_name) as conn:
+            with StardogConnection(Config, args.db_name) as conn:
                 conn.begin()
                 conn.add(stardog.content.File(args.ttl_path))
                 results = conn.select("select * { ?a ?p ?o }")
