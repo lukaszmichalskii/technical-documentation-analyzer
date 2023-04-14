@@ -29,4 +29,7 @@ class StardogConnection:
         return self.connection
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.connection.close()
+        if self.is_admin:
+            self.connection.client.close()
+        else:
+            self.connection.close()
