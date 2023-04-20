@@ -21,10 +21,10 @@ Examples:
 
 
 def run_app(
-        args: argparse.Namespace,
-        argv: typing.List[str],
-        logger: logging.Logger,
-        environment: common.Environment,
+    args: argparse.Namespace,
+    argv: typing.List[str],
+    logger: logging.Logger,
+    environment: common.Environment,
 ) -> int:
     if args.create_db:
         with StardogConnection(Config, is_admin=True) as admin_conn:
@@ -80,12 +80,12 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
         help="specifies path to the file with query to execute",
     )
     parser.add_argument(
-        "--ttl_path", type=str, help="specifies path to the file in the RDF format "
-                                     "that will be uploaded to the database"
+        "--ttl_path",
+        type=str,
+        help="specifies path to the file in the RDF format "
+        "that will be uploaded to the database",
     )
-    parser.add_argument(
-        "db_name", type=str, help="specifies database name"
-    )
+    parser.add_argument("db_name", type=str, help="specifies database name")
     parser.epilog = get_help_epilog()
     return run_app(parser.parse_args(argv[1:]), argv, logger, environment)
 

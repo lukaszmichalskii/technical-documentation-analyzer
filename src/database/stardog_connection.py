@@ -24,7 +24,9 @@ class StardogConnection:
         else:
             if not self.db_name:
                 raise ValueError("db_name must be provided for non-admin connection")
-            self.connection = stardog.Connection(self.db_name, self.endpoint, self.username, self.password)
+            self.connection = stardog.Connection(
+                self.db_name, self.endpoint, self.username, self.password
+            )
             self.logger.info(f"Successfully connected to database {self.db_name}")
         return self.connection
 
