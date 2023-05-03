@@ -4,3 +4,4 @@ pypdf2~=3.0.1
 python-docx~=0.8.11
 mypy==v0.902
 pystardog==v0.14.0
+urllib3~=1.26.9
