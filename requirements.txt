@@ -2,6 +2,5 @@ black==23.1.0
 pylint==2.17.0
 pypdf2~=3.0.1
 python-docx~=0.8.11
-mypy==v0.902
 pystardog==v0.14.0
 urllib3~=1.26.9
