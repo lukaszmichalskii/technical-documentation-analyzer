@@ -10,7 +10,6 @@ class MockConfig:
 
 
 class TestStardogConnection(unittest.TestCase):
-
     @patch("src.application.logs.setup_logger")
     @patch("stardog.Admin")
     def test_enter_admin_connection(self, mock_stardog_admin_connection, mock_logger):
