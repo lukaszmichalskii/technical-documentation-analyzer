@@ -17,13 +17,14 @@ class StardogConnection:
         self.connection = None
 
     def __enter__(self):
-        self.logger.info(f"Connecting to database {self.db_name}")
         if self.is_admin:
+            self.logger.info(f"Establishing admin connection")
             self.connection = stardog.Admin(self.endpoint, self.username, self.password)
             self.logger.info(f"Successfully established admin connection")
         else:
             if not self.db_name:
                 raise ValueError("db_name must be provided for non-admin connection")
+            self.logger.info(f"Connecting to database {self.db_name}")
             self.connection = stardog.Connection(
                 self.db_name, self.endpoint, self.username, self.password
             )
