@@ -1,7 +1,7 @@
 name: CI
 on: [push]
 env:
-  API_KEY: AIzaSyAHADxj0ns_WKGpqpP8bUAStpOBnJLdxsQ
+  API_KEY: ${{ secrets.API_KEY }}
 jobs:
   lint:
     runs-on: ubuntu-latest
