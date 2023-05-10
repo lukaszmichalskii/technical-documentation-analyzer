@@ -12,7 +12,7 @@ def get_obj_properties(tup_ls):
         try:
             text, node_label_ls, url = google_search(tup[2], limit=1)
             new_tup = (tup[0], tup[1], tup[2], text[0], node_label_ls[0], url[0])
-        except Exception:
+        except IndexError as e:
             new_tup = (tup[0], tup[1], tup[2], [], [], [])
 
         init_obj_tup_ls.append(new_tup)

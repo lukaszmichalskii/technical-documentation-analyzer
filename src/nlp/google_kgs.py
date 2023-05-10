@@ -19,7 +19,8 @@ REQUEST_DEPTH_LIMIT = 100000
 
 # filters
 ROOT = "itemListElement"
-DESC_KEY = "detailedDescription"
+DET_DESC_KEY = "detailedDescription"
+DESC_KEY = "description"
 NER = "@type"
 RESULT_KEY = "result"
 URL_KEY = "url"
@@ -44,6 +45,10 @@ def google_search(
         Response from graph in raw json form or tuple ready to assembly in NER NLP
     """
     api_key = os.environ.get("API_KEY")
+    if api_key is None:
+        raise GoogleSearchError(
+            "API_KEY environment variable not set. Cannot verify identity."
+        )
     params = google_api_params(query=query, api_key=api_key, limit=limit, indent=indent)
     url = build_url(params)
     response = do_GET(url)
@@ -92,21 +97,22 @@ def classify(response) -> Tuple[List[Any], List[Any], List[Any]]:
 def named_entities(element, storage_reference) -> None:
     try:
         storage_reference.append(element[RESULT_KEY][NER])
-    except Exception:
+    except KeyError:
         storage_reference.append("")
 
 
 def find_url(element, storage_reference) -> None:
     try:
-        storage_reference.append(element[RESULT_KEY][DESC_KEY][URL_KEY])
-    except Exception:
+        storage_reference.append(element[RESULT_KEY][DET_DESC_KEY][URL_KEY])
+    except KeyError:
         storage_reference.append("")
 
 
 def description(element, storage_reference) -> None:
     try:
-        storage_reference.append(element[RESULT_KEY][DESC_KEY][ARTICLE_BODY])
-    except Exception:
+        storage_reference.append(element[RESULT_KEY][DET_DESC_KEY][ARTICLE_BODY])
+        storage_reference.append(element[RESULT_KEY][DESC_KEY])
+    except KeyError:
         storage_reference.append("")
 
 
