@@ -1,7 +1,9 @@
 from rdflib import Graph
-from pyvis.network import Network
 
-example = [('camera recognition', 'be', 'component'), ('camera recognition', 'be', 'computer vision module'), ('camera recognition', 'responsible', 'autonomous system'), ('camera recognition', 'be', 'component'), ('camera recognition', 'be', 'control pipeline'), ('camera recognition', 'be', 'autonomous system'), ('camera recognition', 'be', 'objects'), ('camera recognition', 'be', 'real time'), ('camera recognition', 'be', 'field'), ('camera recognition', 'be', 'cones'), ('camera', 'use', 'camera recognition'), ('camera', 'be', 'device'), ('camera', 'be', 'digital')]
+example = [('camera recognition', 'be', 'component', 'In biology and ecology, abiotic components or abiotic factors are non-living chemical and physical parts of the environment that affect living organisms and the functioning of ecosystems. ', ['Thing', 'Person'], 'https://en.wikipedia.org/wiki/Abiotic_component'),
+           ('camera', 'use', 'component', 'In biology and ecology, abiotic components or abiotic factors are non-living chemical and physical parts of the environment that affect living organisms and the functioning of ecosystems. ', ['Thing'], 'https://en.wikipedia.org/wiki/Abiotic_component'),
+           ('camera', 'be', 'device', 'In biology and ecology, abiotic components or abiotic factors are non-living chemical and physical parts of the environment that affect living organisms and the functioning of ecosystems. ', ['Device'], 'https://en.wikipedia.org/wiki/Abiotic_component'),
+           ('component', 'be', 'something', 'In biology and ecology, abiotic components or abiotic factors are non-living chemical and physical parts of the environment that affect living organisms and the functioning of ecosystems. ', ['Thing', 'Device'], 'https://en.wikipedia.org/wiki/Abiotic_component')]
 
 
 def convert_to_rdf(triple_list):
@@ -12,15 +14,31 @@ def convert_to_rdf(triple_list):
         verb = triple[1].replace(" ", "_")
         object = triple[2].replace(" ", "_")
 
+        description = triple[3]
+        classes = triple[4]
+        url = triple[5]
+
         rdf_triples.append(f":{subject} :{verb} :{object} .")
+
+        if classes != "[]":
+            for item in classes:
+                rdf_triples.append(f":{object} rdf:type :{item} .")
+
+        if description != "[]":
+            rdf_triples.append(f":{object} rdfs:description \"{description}\" .")
+
+        if url != "[]":
+            rdf_triples.append(f":{object} rdfs:seeAlso \"{url}\" .")
 
     return rdf_triples
 
 
 def make_turtle_syntax(rdf_triples):
-    prefix = "http://example.org/test#"
+    prefix = "http://api.stardog.com/"
     rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    turtle_syntax = f"PREFIX : <{prefix}>\nPREFIX rdf: <{rdf}>\n"
+    xsd = "http://www.w3.org/2001/XMLSchema#"
+    rdfs = "http://www.w3.org/2000/01/rdf-schema#"
+    turtle_syntax = f"PREFIX : <{prefix}>\nPREFIX rdf: <{rdf}>\nPREFIX xsd: <{xsd}>\nPREFIX rdfs: <{rdfs}>\n"
     for triple in rdf_triples:
         turtle_syntax += triple + "\n"
 
@@ -30,35 +48,10 @@ def make_turtle_syntax(rdf_triples):
 def make_graph(turtle):
     graph = Graph()
     graph.parse(data=turtle, format='turtle')
-
-    network = Network()
-    nodes = []
-    edges = []
-
-    for sub, edg, obj in graph:
-
-        # temporary solution to pyvis not reading integers correctly
-        if str(sub).isdigit():
-            sub = str(sub) + '.'
-        if str(obj).isdigit():
-            obj = str(obj) + '.'
-
-        nodes.append(sub)
-        nodes.append(obj)
-        edges.append([sub, obj])
-        print(sub, edg, obj)
-
-    network.add_nodes(nodes)
-    network.add_edges(edges)
-    # notebook = False - needed in new pyvis versions to work properly
-    network.show('basic.html', notebook=False)
+    graph.serialize('KG.ttl', format='turtle')
 
 
 x = convert_to_rdf(example)
-
 t = make_turtle_syntax(x)
-
-print(t)
-
 make_graph(t)
 
