@@ -15,6 +15,7 @@ PIPELINE = enum(
     CONTENT_FILTERING="content_filtering",  # content filtering based on TFIDF step (and optional TOPIC_MODELING data)
     BATCH="batch",  # obtain batch from document by filter out sentence with length not in defined threshold
     SVO="subject_verb_object",  # subject-verb-object triples extraction
+    SPO="subject_predicate_object",  # subject-predicate-object triples extraction
     NPN="noun_preposition_noun",  # noun-preposition-noun n-grams extraction
     NER="named_entity_recognition"  # named entity recognition, classification and description generation
 )
@@ -28,6 +29,7 @@ NLP_PIPELINE_JOBS = [
     PIPELINE.CONTENT_FILTERING,
     PIPELINE.BATCH,
     PIPELINE.SVO,
+    PIPELINE.SPO,
     PIPELINE.NPN,
     PIPELINE.NER,
 ]
