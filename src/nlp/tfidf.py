@@ -5,8 +5,8 @@ from nltk.tokenize import word_tokenize
 from nlp import utils
 
 
-SPECIAL_CHARS = utils.read_resource("resources/special_chars.txt")
-FUNCTION_WORDS = utils.read_resource("resources/function_words.txt")
+SPECIAL_CHARS = utils.read_resource("nlp/resources/special_chars.txt")
+FUNCTION_WORDS = utils.read_resource("nlp/resources/function_words.txt")
 
 
 def tfidf(text: str) -> List[Tuple[str, int]]:

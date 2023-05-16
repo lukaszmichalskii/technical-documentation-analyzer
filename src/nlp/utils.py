@@ -19,9 +19,11 @@ def svo_triples(svo_ls: List[str]) -> List[SVO]:
     triples = []
     for svo in svo_ls:
         svo_obj = SVO()
-        
+
         subj, verb, *obj = svo.split()
-        svo_obj.subj = subj if subj.lower() not in PRONOUNS else "system"  # workaround for in-person system description
+        svo_obj.subj = (
+            subj if subj.lower() not in PRONOUNS else "system"
+        )  # workaround for in-person system description
         svo_obj.verb = verb
         svo_obj.obj = " ".join(obj)
         triples.append(svo_obj)

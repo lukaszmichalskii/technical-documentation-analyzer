@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import argparse
 import logging
 import os.path
@@ -6,8 +8,14 @@ import shutil
 import sys
 import typing
 
+from nlp.nlp_job_runner import NLPJobRunner
 from src.application import common, decompression, logs
-from src.application.common import STEPS_CHOICES, STEPS, STANDARD_STEPS
+from src.application.common import (
+    STEPS_CHOICES,
+    STEPS,
+    STANDARD_STEPS,
+    NLP_PIPELINE_JOBS,
+)
 from src.application.decompression import DecompressionError, NotSupportedArchiveFormat
 from src.application.file_manager import FileManager
 from src.application.text_provider import NotSupportedDocumentFormat
@@ -17,6 +25,7 @@ def get_help_epilog():
     return """
 Exit codes:
     0 - successful execution
+    4 - no information was extracted during analysis, check your NLP pipeline setup.
     any other code indicated unrecoverable error - output might be invalid
     
 Environment variables:
@@ -50,6 +59,13 @@ def decoded_path(results_dir: pathlib.Path) -> pathlib.Path:
     return decoded
 
 
+def nlp_path(results_dir: pathlib.Path, subdir: str | pathlib.Path) -> pathlib.Path:
+    info = results_dir.joinpath("information").joinpath(subdir)
+    if not info.exists():
+        os.makedirs(info)
+    return info
+
+
 def run_app(
     args: argparse.Namespace,
     argv: typing.List[str],
@@ -66,9 +82,9 @@ def run_app(
     def copy_step() -> None:
         logger.info(f"Nothing to be decompressed.")
         if techdoc_path.is_dir():
-            decompression.copydir(techdoc_path, output.joinpath())
+            decompression.copydir(techdoc_path, decoded_path(output))
         else:
-            shutil.copy2(techdoc_path, output)
+            shutil.copy2(techdoc_path, decoded_path(output))
 
     def decode_step() -> None:
         file_manager = FileManager(file_size_limit=environment.in_memory_file_limit)
@@ -86,6 +102,41 @@ def run_app(
             except NotSupportedDocumentFormat as e:
                 logger.warning(f"Skipping file {file}. {str(e)}")
                 continue
+
+    def information_extraction_step():
+        nlp_analizer = NLPJobRunner(
+            logger, pipeline=NLP_PIPELINE_JOBS, model=environment.spacy_model
+        )
+        for file in FileManager.files_in_dir(decoded_path(output)):
+            with open(file) as fd:
+                text = fd.read()
+            filename = pathlib.Path(file)
+            nlp_dir = nlp_path(output, subdir=filename.stem)
+            logger.info(
+                f"NLP module started. Processing {filename.name} documentation."
+            )
+            spo, svo = nlp_analizer.execute(
+                text,
+                save=nlp_dir.joinpath(f"{filename.stem}.png")
+                if args.visualize
+                else None,
+            )
+            if not spo and not svo:
+                logger.error("No information was extracted.")
+                logger.info("App finished with exit code 4")
+                return sys.exit(4)
+            if spo:
+                with open(nlp_dir.joinpath(f"{filename.stem}_spo.txt"), "w+") as fd:
+                    for triple in spo:
+                        fd.write(
+                            f"{triple.subj};{list(triple.subj_attrs)};{triple.pred};{triple.obj};{list(triple.obj_attrs)}\n"
+                        )
+            if svo:
+                with open(nlp_dir.joinpath(f"{filename.stem}_svo.txt"), "w+") as fd:
+                    for triple in svo:
+                        fd.write(
+                            f"{triple.subj};{list(triple.subj_ner)};{triple.verb};{triple.obj};{list(triple.obj_ner)}\n"
+                        )
 
     if common.get_current_os() != "linux":
         logger.warning(
@@ -122,6 +173,12 @@ def run_app(
             return 1
     if STEPS.DECODE in args.only:
         decode_step()
+    if STEPS.INFORMATION_EXTRACTION in args.only and STEPS.DECOMPRESS in args.only:
+        information_extraction_step()
+    else:
+        logger.error(
+            "Information extraction could not be executed without 'decompress' step."
+        )
     logger.info("App finished with exit code 0")
     return 0
 
@@ -144,13 +201,13 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
     )
     parser.add_argument(
         "--only",
-        type=str,
-        nargs="*",
+        nargs="+",
         choices=STEPS_CHOICES,
         default=STANDARD_STEPS,
         help="""specifies actions which should be performed on input package:
     'decompress' - decompress files from archive pointed by --techdoc_path to the directory pointed by --output
     'decode'     - decode extracted files, cleanup text for NLP processing.
+    'information_extraction' - natural language processing for information extraction.
     """,
     )
     parser.add_argument(
@@ -160,6 +217,11 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
         metavar="output_folder",
         default="results",
         help="specifies directory, where results should be saved. Has to be empty",
+    )
+    parser.add_argument(
+        "--visualize",
+        action="store_true",
+        help="save graph visualization from 'information_extraction' job",
     )
     parser.epilog = get_help_epilog()
     return run_app(parser.parse_args(argv[1:]), argv, logger, environment)
