@@ -1,9 +1,14 @@
 from rdflib import Graph
+from src.nlp.triples import SVO
 
-example = [('camera recognition', 'be', 'component', 'In biology and ecology, abiotic components or abiotic factors are non-living chemical and physical parts of the environment that affect living organisms and the functioning of ecosystems. ', ['Thing', 'Person'], 'https://en.wikipedia.org/wiki/Abiotic_component'),
-           ('camera', 'use', 'component', 'In biology and ecology, abiotic components or abiotic factors are non-living chemical and physical parts of the environment that affect living organisms and the functioning of ecosystems. ', ['Thing'], 'https://en.wikipedia.org/wiki/Abiotic_component'),
-           ('camera', 'be', 'device', 'In biology and ecology, abiotic components or abiotic factors are non-living chemical and physical parts of the environment that affect living organisms and the functioning of ecosystems. ', ['Device'], 'https://en.wikipedia.org/wiki/Abiotic_component'),
-           ('component', 'be', 'something', 'In biology and ecology, abiotic components or abiotic factors are non-living chemical and physical parts of the environment that affect living organisms and the functioning of ecosystems. ', ['Thing', 'Device'], 'https://en.wikipedia.org/wiki/Abiotic_component')]
+example = [SVO(subj='Simultaneous localization', verb='create', obj='map', subj_ner=['jak', 'wół'], obj_ner=[]),
+           SVO(subj='system', verb='', obj='Simultaneous localization', subj_ner=[], obj_ner=[]),
+           SVO(subj='system', verb='represent', obj='map object', subj_ner=[], obj_ner=[]),
+           SVO(subj='Landmark', verb='represent', obj='various things', subj_ner=[], obj_ner=[]),
+           SVO(subj='SLAM', verb='give', obj='good results', subj_ner=[], obj_ner=['jak']),
+           SVO(subj='approach', verb='have', obj='big advantage', subj_ner=[], obj_ner=[]),
+           SVO(subj='particles', verb='share', obj='same history', subj_ner=[], obj_ner=[]),
+           SVO(subj='particle', verb='create', obj='new path', subj_ner=[], obj_ner=[])]
 
 
 def convert_to_rdf(triple_list):
@@ -18,25 +23,28 @@ def convert_to_rdf(triple_list):
     rdf_triples = []
 
     for triple in triple_list:
-        subject = triple[0].replace(" ", "_")
-        verb = triple[1].replace(" ", "_")
-        object = triple[2].replace(" ", "_")
+        subject = triple.subj.replace(" ", "_")
+        verb = triple.verb.replace(" ", "_")
+        object = triple.obj.replace(" ", "_")
 
-        description = triple[3]
-        classes = triple[4]
-        url = triple[5]
+        subject_ner = triple.subj_ner
+        for sub in subject_ner:
+            sub.replace(" ", "_")
 
-        rdf_triples.append(f":{subject} :{verb} :{object} .")
+        object_ner = triple.obj_ner
+        for ob in object_ner:
+            ob.replace(" ", "_")
 
-        if classes != "[]":
-            for item in classes:
+        if verb:
+            rdf_triples.append(f":{subject} :{verb} :{object} .")
+
+        if subject_ner:
+            for item in subject_ner:
+                rdf_triples.append(f":{subject} rdf:type :{item} .")
+
+        if object_ner:
+            for item in object_ner:
                 rdf_triples.append(f":{object} rdf:type :{item} .")
-
-        if description != "[]":
-            rdf_triples.append(f":{object} rdfs:description \"{description}\" .")
-
-        if url != "[]":
-            rdf_triples.append(f":{object} rdfs:seeAlso \"{url}\" .")
 
     return rdf_triples
 
@@ -72,7 +80,7 @@ def make_graph(turtle):
     graph.serialize('KG.ttl', format='turtle')
 
 
-x = convert_to_rdf(example)
-t = make_turtle_syntax(x)
-make_graph(t)
-
+if __name__ == "__main__":
+    x = convert_to_rdf(example)
+    t = make_turtle_syntax(x)
+    make_graph(t)
