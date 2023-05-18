@@ -15,6 +15,7 @@ from src.application.common import (
     STEPS,
     STANDARD_STEPS,
     NLP_PIPELINE_JOBS,
+    SKIP_DECODING,
 )
 from src.application.decompression import DecompressionError, NotSupportedArchiveFormat
 from src.application.file_manager import FileManager
@@ -91,6 +92,10 @@ def run_app(
         for file in FileManager.files_in_dir(output):
             try:
                 file = pathlib.Path(file)
+                if file.suffix in SKIP_DECODING:
+                    shutil.copyfile(file, decoded_path(output).joinpath(file.name))
+                    continue
+                logger.info(f"Decoding {file.stem}...")
                 decoded_text = file_manager.decode_text(file)
                 logger.info(f"{file} file has been parsed successfully.")
                 file_manager.save_parsed_text(
@@ -173,12 +178,9 @@ def run_app(
             return 1
     if STEPS.DECODE in args.only:
         decode_step()
-    if STEPS.INFORMATION_EXTRACTION in args.only and STEPS.DECOMPRESS in args.only:
+    if STEPS.INFORMATION_EXTRACTION in args.only:
+        logger.info("Information extraction...")
         information_extraction_step()
-    else:
-        logger.error(
-            "Information extraction could not be executed without 'decompress' step."
-        )
     logger.info("App finished with exit code 0")
     return 0
 

@@ -20,7 +20,7 @@ test:
 
 lint:
 	@$(PYTHON) -m black --diff --check $(FILES)
-	@$(PYTHON) -m pylint --disable=all --enable=unused-import $(FILES)
+	@$(PYTHON) -m pylint --disable=all --enable=unused-import --ignore-patterns=compile.py $(FILES)
 
 clean:
 	rm -rf .mypy_cache

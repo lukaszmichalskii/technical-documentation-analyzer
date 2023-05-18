@@ -20,6 +20,7 @@ STANDARD_STEPS = [STEPS.DECOMPRESS, STEPS.DECODE, STEPS.INFORMATION_EXTRACTION]
 
 SUPPORTED_ARCHIVES = {".zip", ".tar.xz", ".xz"}
 SUPPORTED_DOCUMENTS = {".docx", ".pdf", ".txt"}
+SKIP_DECODING = [".txt"]  # assume txt file contains standard charset
 RESULTS_FORMAT = ".txt"
 
 ########################################################################################################################
@@ -53,6 +54,7 @@ NLP_PIPELINE_JOBS = [
     PIPELINE.NPN,
     PIPELINE.NER,
 ]
+
 
 ########################################################################################################################
 ############################################ END PIPELINES #############################################################

@@ -1,6 +1,6 @@
 import pathlib
 import time
-from typing import List, Tuple
+from typing import Tuple, Set
 
 import networkx as nx
 import nltk.tokenize
@@ -9,10 +9,15 @@ from matplotlib import pyplot as plt
 from nltk import CoreNLPParser
 
 from src.application import logs
+from src.application.common import NLP_PIPELINE_JOBS, PIPELINE
 from src.nlp.compile import compile_nlp
 from src.nlp.cross_coref import cross_coref
-from src.nlp.information_extraction import content_filtering, filter_sents, svo_extract, spo_extract, svo
-from src.application.common import NLP_PIPELINE_JOBS, PIPELINE
+from src.nlp.information_extraction import (
+    content_filtering,
+    filter_sents,
+    svo,
+    spo,
+)
 from src.nlp.pre_processing import remove_whitespace_characters, remove_unicode
 from src.nlp.tfidf import tfidf
 from src.nlp.triples import SVO, SPO
@@ -76,15 +81,15 @@ class NLPJobRunner:
         self.human_knowledge = list()
         self.sentences = list()
         self.filtered_content = list()
-        self.svo = list()
-        self.spo = list()
+        self.svo = set()
+        self.spo = set()
 
         # parameters
         self.tfidf_top = 5
 
     def execute(
         self, text: str, save: pathlib.Path = None
-    ) -> Tuple[List[SPO], List[SVO]]:
+    ) -> Tuple[Set[SPO], Set[SVO]]:
         self.documentation = text
         start = time.time()
         if PIPELINE.CLEAN in self.pipeline:
@@ -128,7 +133,7 @@ class NLPJobRunner:
             )
         else:
             self.logger.error(f"Invalid pipeline setup, {PIPELINE.TOKENIZE} not found.")
-            return list(), list()
+            return set(), set()
         start = time.time()
         if PIPELINE.TOPIC_MODELING in self.pipeline and self.human_knowledge:
             pattern = [subject for subject in self.human_knowledge]
@@ -180,10 +185,7 @@ class NLPJobRunner:
             )
         start = time.time()
         if PIPELINE.SPO in self.pipeline:
-            for sent in self.sentences:
-                spo_triple = spo_extract(sent, self.pos_tagger)
-                if spo_triple and spo_triple not in self.spo:
-                    self.spo.append(spo_triple)
+            self.spo = spo(self.sentences, self.pos_tagger)
             self.logger.info(
                 f"SPO triples extraction execution time: {time.time() - start:.2f}s"
             )
@@ -321,5 +323,4 @@ IMU sensors with gaussian noise for motion estimation module.
 GNSS sensor with gaussian noise for motion estimation module.
 Odometry sensors with gaussian noise for motion estimation module."""
     spo_, svo_ = jr.execute(text)
-    print(spo_)
-    # dummy_save(svo_, spo_, "graph.png")
+    dummy_save(svo_, spo_, "graph.png")

@@ -20,9 +20,11 @@ class SVO:
         return False
 
     def __eq__(self, other: SVO):
-        if self.subj == other.subj and \
-                self.obj == other.obj and \
-                self.verb == other.verb:
+        if (
+            self.subj == other.subj
+            and self.obj == other.obj
+            and self.verb == other.verb
+        ):
             return True
         return False
 
@@ -44,9 +46,11 @@ class SPO:
     obj_attrs: str | List[str] = ""
 
     def __eq__(self, other: SPO):
-        if self.subj == other.subj and \
-                self.obj == other.obj and \
-                self.pred == other.pred:
+        if (
+            self.subj == other.subj
+            and self.obj == other.obj
+            and self.pred == other.pred
+        ):
             return True
         return False
 

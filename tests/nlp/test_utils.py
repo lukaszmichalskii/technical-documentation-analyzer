@@ -18,7 +18,7 @@ class TestUtils(unittest.TestCase):
                 SVO(subj="system", obj="landmark map", verb="create"),
                 SVO(subj="system", obj="FSOCO", verb="use"),
             ].sort(),
-            resolved.sort()
+            resolved.sort(),
         )
 
     def test_svo_triple_resolve_noun_phrases(self):
@@ -28,15 +28,19 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(
             [
                 SVO(subj="FastSLAM", obj="landmark map", verb="create"),
-                SVO(subj="Simultaneous localization", obj="occupancy grid", verb="create"),
+                SVO(
+                    subj="Simultaneous localization",
+                    obj="occupancy grid",
+                    verb="create",
+                ),
             ].sort(),
-            resolved.sort()
+            resolved.sort(),
         )
 
     def test_svo_triple_remove_invalid_relations(self):
         corrupted = "one associate "
         correct = "FastSLAM create landmark map"
         results = svo_triples([corrupted, correct], MODEL)
-        self.assertEqual([SVO(subj="FastSLAM", obj="landmark map", verb="create")], results)
-
-
+        self.assertEqual(
+            [SVO(subj="FastSLAM", obj="landmark map", verb="create")], results
+        )

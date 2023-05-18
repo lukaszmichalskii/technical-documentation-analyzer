@@ -11,12 +11,12 @@ class TestTFIDF(unittest.TestCase):
 
     def test_tfidf(self):
         ranking = [
-            ('text', 3),
-            ('test', 2),
-            ('word', 2),
-            ('count', 1),
-            ('occurrences', 1),
-            ('corpus', 1)
+            ("text", 3),
+            ("test", 2),
+            ("word", 2),
+            ("count", 1),
+            ("occurrences", 1),
+            ("corpus", 1),
         ]
         empty = ""
         case_non_sensitive = "Text detected as same word as text"

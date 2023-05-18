@@ -4,7 +4,7 @@ import spacy
 import crosslingual_coreference
 from spacy import Language
 
-from sources import NLP
+from src.sources import NLP
 from src.application.common import PIPELINE
 
 
