@@ -83,13 +83,13 @@ def run_app(
     def copy_step() -> None:
         logger.info(f"Nothing to be decompressed.")
         if techdoc_path.is_dir():
-            decompression.copydir(techdoc_path, extracted_path(output))
+            decompression.copydir(techdoc_path, decoded_path(output))
         else:
-            shutil.copy2(techdoc_path, extracted_path(output))
+            shutil.copy2(techdoc_path, decoded_path(output))
 
     def decode_step() -> None:
         text_processor = TextProcessor()
-        for file in files_in_dir(output):
+        for file in files_in_dir(techdoc_path):
             try:
                 file = pathlib.Path(file)
                 if file.suffix in SKIP_DECODING:
@@ -150,8 +150,8 @@ def run_app(
         return 1
 
     techdoc_path = pathlib.Path(args.techdoc_path)
-    parser_script_path = pathlib.Path(args.parser_script_path)
     output = pathlib.Path(args.output)
+    parser_script_path = pathlib.Path(args.parser_script_path)
     if not output.exists():
         output.mkdir()
     if STEPS.DECOMPRESS in args.only:
