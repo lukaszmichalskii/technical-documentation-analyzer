@@ -2,7 +2,11 @@ pypdf2~=3.0.1
 python-docx
 pystardog
 urllib3~=1.26.15
-spacy~=3.1.7
+spacy==3.1.7
+crosslingual-coreference==0.3
 numpy~=1.24.3
 nltk~=3.8.1
 scipy~=1.10.1
+networkx~=3.1
+pandas
+matplotlib
