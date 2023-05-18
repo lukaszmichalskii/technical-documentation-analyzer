@@ -4,6 +4,7 @@ import spacy
 import crosslingual_coreference
 from spacy import Language
 
+from sources import NLP
 from src.application.common import PIPELINE
 
 
@@ -15,5 +16,5 @@ def compile_nlp(model: str, pipeline: List[str]) -> Tuple[Language, Language]:
             "xx_coref", config={"chunk_size": 2500, "chunk_overlap": 2, "device": -1}
         )
     if PIPELINE.NER in pipeline:
-        ner = spacy.load("nlp/models/ner")
+        ner = spacy.load(NLP.joinpath("models/ner"))
     return lang, ner

@@ -11,8 +11,13 @@ class SVO:
     subj: str = ""
     verb: str = ""
     obj: str = ""
-    subj_ner: str = ""
-    obj_ner: str = ""
+    subj_ner: List[str] = dataclasses.field(default_factory=list)
+    obj_ner: List[str] = dataclasses.field(default_factory=list)
+
+    def invalid(self):
+        if self.subj == "" or self.obj == "":
+            return True
+        return False
 
 
 @dataclasses.dataclass

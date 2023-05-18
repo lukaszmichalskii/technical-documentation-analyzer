@@ -80,7 +80,7 @@ def svo(text: str, model: Language) -> List[SVO]:
                             adj = adj_noun(text, sub_tok.i, model)
                             phrase += adj + " " + sub_tok.text
                             svo_ls.append(phrase.strip())
-    return svo_triples(svo_ls)
+    return svo_triples(svo_ls, model)
 
 
 def spo(text: str, tagger: CoreNLPParser) -> Optional[SPO]:

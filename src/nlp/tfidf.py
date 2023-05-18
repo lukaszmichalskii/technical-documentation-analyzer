@@ -3,10 +3,10 @@
 from typing import List, Tuple
 from nltk.tokenize import word_tokenize
 from nlp import utils
+from sources import NLP
 
-
-SPECIAL_CHARS = utils.read_resource("nlp/resources/special_chars.txt")
-FUNCTION_WORDS = utils.read_resource("nlp/resources/function_words.txt")
+SPECIAL_CHARS = utils.read_resource(NLP.joinpath("resources/special_chars.txt"))
+FUNCTION_WORDS = utils.read_resource(NLP.joinpath("resources/function_words.txt"))
 
 
 def tfidf(text: str) -> List[Tuple[str, int]]:
