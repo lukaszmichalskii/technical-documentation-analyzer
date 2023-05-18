@@ -18,7 +18,7 @@ class NotSupportedDocumentFormat(Exception):
 
 
 def _read_all(
-        fd, buffer_read_fn: typing.Callable[[typing.IO[str | bytes]], str]
+    fd, buffer_read_fn: typing.Callable[[typing.IO[str | bytes]], str]
 ) -> str:
     """
     Read from buffer stream str or bytes and clean up decoded content
@@ -64,7 +64,7 @@ class TextProvider:
                 return _read_all(docx_, self.docx_extractor.read_all)
 
     def get_file_chunk(
-            self, filepath: pathlib.Path
+        self, filepath: pathlib.Path
     ) -> typing.Generator[str, None, None]:
         """
         Read single .pdf, .docx, and standard .txt file content chunks
@@ -196,8 +196,8 @@ class DocxDecoder(Decoder):
 
 
 def save_parsed_text(
-        destination: pathlib.Path,
-        parsed_text: str | typing.Generator[str, None, None],
+    destination: pathlib.Path,
+    parsed_text: str | typing.Generator[str, None, None],
 ) -> None:
     with open(destination, "w") as fd:
         if isinstance(parsed_text, types.GeneratorType):
@@ -207,7 +207,7 @@ def save_parsed_text(
             fd.write(parsed_text)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = sys.argv[1:]
 
     file_size_limit = int(os.environ.get("IN_MEMORY_FILE_SIZE", 1024 * 1024))
