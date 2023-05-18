@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 import pathlib
 import types
@@ -209,7 +210,7 @@ def save_parsed_text(
 if __name__ == '__main__':
     args = sys.argv[1:]
 
-    # file_size_limit = int(os.environ.get("IN_MEMORY_FILE_SIZE", 1024 * 1024))
+    file_size_limit = int(os.environ.get("IN_MEMORY_FILE_SIZE", 1024 * 1024))
     text_provider = TextProvider()
 
     file = pathlib.Path(args[0])
