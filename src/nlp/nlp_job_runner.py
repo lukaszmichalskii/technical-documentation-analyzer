@@ -8,14 +8,14 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from nltk import CoreNLPParser
 
-from application import logs
-from nlp.compile import compile_nlp
-from nlp.cross_coref import cross_coref
-from nlp.information_extraction import content_filtering, filter_sents, svo, spo
+from src.application import logs
+from src.nlp.compile import compile_nlp
+from src.nlp.cross_coref import cross_coref
+from src.nlp.information_extraction import content_filtering, filter_sents, svo_extract, spo_extract, svo
 from src.application.common import NLP_PIPELINE_JOBS, PIPELINE
-from nlp.pre_processing import remove_special_characters, remove_unicode
-from nlp.tfidf import tfidf
-from nlp.triples import SVO, SPO
+from src.nlp.pre_processing import remove_whitespace_characters, remove_unicode
+from src.nlp.tfidf import tfidf
+from src.nlp.triples import SVO, SPO
 
 
 def dummy_save(svo_, spo_, file):
@@ -88,7 +88,7 @@ class NLPJobRunner:
         self.documentation = text
         start = time.time()
         if PIPELINE.CLEAN in self.pipeline:
-            self.documentation = remove_special_characters(self.documentation)
+            self.documentation = remove_whitespace_characters(self.documentation)
             self.documentation = remove_unicode(self.documentation)
             self.logger.info(
                 f"Text preprocessing execution time: {time.time() - start:.2f}s"
@@ -170,10 +170,7 @@ class NLPJobRunner:
             self.logger.warn("Further processing will be performed on unfiltered data.")
         start = time.time()
         if PIPELINE.SVO in self.pipeline:
-            for sent in self.sentences:
-                svo_triples = svo(sent, self.lang)
-                if len(svo_triples) > 0:
-                    self.svo.extend(svo_triples)
+            self.svo = svo(self.sentences, self.lang)
             self.logger.info(
                 f"SVO triples extraction execution time: {time.time() - start:.2f}s"
             )
@@ -184,7 +181,7 @@ class NLPJobRunner:
         start = time.time()
         if PIPELINE.SPO in self.pipeline:
             for sent in self.sentences:
-                spo_triple = spo(sent, self.pos_tagger)
+                spo_triple = spo_extract(sent, self.pos_tagger)
                 if spo_triple and spo_triple not in self.spo:
                     self.spo.append(spo_triple)
             self.logger.info(

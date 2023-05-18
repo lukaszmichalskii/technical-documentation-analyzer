@@ -8,7 +8,7 @@ import shutil
 import sys
 import typing
 
-from nlp.nlp_job_runner import NLPJobRunner
+from src.nlp.nlp_job_runner import NLPJobRunner
 from src.application import common, decompression, logs
 from src.application.common import (
     STEPS_CHOICES,

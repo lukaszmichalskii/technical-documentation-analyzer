@@ -2,8 +2,8 @@
 """
 from typing import List, Tuple
 from nltk.tokenize import word_tokenize
-from nlp import utils
-from sources import NLP
+from src.nlp import utils
+from src.sources import NLP
 
 SPECIAL_CHARS = utils.read_resource(NLP.joinpath("resources/special_chars.txt"))
 FUNCTION_WORDS = utils.read_resource(NLP.joinpath("resources/function_words.txt"))

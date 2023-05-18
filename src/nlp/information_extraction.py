@@ -1,5 +1,5 @@
 import re
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Set
 
 import nltk.tokenize
 from nltk.parse.corenlp import CoreNLPParser
@@ -7,10 +7,10 @@ from nltk.tree import ParentedTree
 from scipy.stats import norm
 from spacy import Language
 
-from nlp.tfidf import FUNCTION_WORDS
-from nlp.triples import SVO, SPO
-from nlp.triples import WordAttr
-from nlp.utils import svo_triples
+from src.nlp.tfidf import FUNCTION_WORDS
+from src.nlp.triples import SVO, SPO
+from src.nlp.triples import WordAttr
+from src.nlp.utils import svo_triples
 
 SUBJECT = ["nsubj", "nsubjpass", "csubj", "csubjpass", "agent", "expl"]
 OBJECT = ["dobj", "pobj"]
@@ -63,7 +63,14 @@ def adj_noun(text: str, index: int, model: Language) -> str:
     return phrase
 
 
-def svo(text: str, model: Language) -> List[SVO]:
+def svo(text: List[str], model: Language) -> Set[SVO]:
+    svo_ls = list()
+    for sent in text:
+        svo_ls.extend(svo_extract(sent, model))
+    return set(svo_ls)
+
+
+def svo_extract(text: str, model: Language) -> List[SVO]:
     corpus = model(text)
     svo_ls = []
     for token in corpus:
@@ -83,7 +90,16 @@ def svo(text: str, model: Language) -> List[SVO]:
     return svo_triples(svo_ls, model)
 
 
-def spo(text: str, tagger: CoreNLPParser) -> Optional[SPO]:
+def spo(text: List[str], tagger: CoreNLPParser) -> Set[SPO]:
+    spo_ls = list()
+    for sent in text:
+        triplet = spo_extract(sent, tagger)
+        if triplet and triplet not in spo_ls:
+            spo_ls.append(triplet)
+    return set(spo_ls)
+
+
+def spo_extract(text: str, tagger: CoreNLPParser) -> Optional[SPO]:
     (dependency_tree,) = ParentedTree.convert(
         list(tagger.parse(nltk.tokenize.word_tokenize(text)))[0]
     )

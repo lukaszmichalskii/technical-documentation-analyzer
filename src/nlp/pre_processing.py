@@ -1,7 +1,7 @@
 import re
 
 
-def remove_special_characters(text: str) -> str:
+def remove_whitespace_characters(text: str) -> str:
     return re.sub(r"[\n\r\t]", " ", text)
 
 

@@ -19,6 +19,19 @@ class SVO:
             return True
         return False
 
+    def __eq__(self, other: SVO):
+        if self.subj == other.subj and \
+                self.obj == other.obj and \
+                self.verb == other.verb:
+            return True
+        return False
+
+    def __lt__(self, other: SVO):
+        return self.subj < other.subj
+
+    def __hash__(self):
+        return hash((self.subj, self.obj, self.verb))
+
 
 @dataclasses.dataclass
 class SPO:
@@ -29,6 +42,19 @@ class SPO:
     pred: str = ""
     obj: str = ""
     obj_attrs: str | List[str] = ""
+
+    def __eq__(self, other: SPO):
+        if self.subj == other.subj and \
+                self.obj == other.obj and \
+                self.pred == other.pred:
+            return True
+        return False
+
+    def __lt__(self, other: SPO):
+        return self.subj < other.subj
+
+    def __hash__(self):
+        return hash((self.subj, self.obj, self.pred))
 
 
 @dataclasses.dataclass
