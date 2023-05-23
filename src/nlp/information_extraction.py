@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from typing import List, Tuple, Optional, Set
 
@@ -10,13 +12,28 @@ from spacy import Language
 from src.nlp.tfidf import FUNCTION_WORDS
 from src.nlp.triples import SVO, SPO
 from src.nlp.triples import WordAttr
-from src.nlp.utils import svo_triples
 
 SUBJECT = ["nsubj", "nsubjpass", "csubj", "csubjpass", "agent", "expl"]
 OBJECT = ["dobj", "pobj"]
 NOUN_PREP = ["NOUN", "PROPN", "PRON"]
 VERB = "VERB"
 ADJ = "ADJ"
+
+"""workaround for in-person system references in documentation
+e.g. we execute external tool -> system execute external tool
+"""
+PRONOUNS = ["i", "you", "he", "she", "it", "we", "they"]
+RESOLVED = "System"
+
+
+"""named entity linking
+"""
+LIBRARY = ["LIBRARY"]
+ALGORITHM = ["ALGORITHM", "KALMAN FILTER", "YOLO", "SLAM"]
+SENSOR = ["SENSOR"]
+SOFTWARE = ["ROBOTIC OPERATING SYSTEM", "SOFTWARE"]
+PROGRAMMING_LANGUAGE = ["PROGRAMMING LANGUAGE"]
+EXECUTION_UNIT = ["COMPUTING PLATFORM", "PROCESSING UNIT"]
 
 
 def content_filtering(sentences: List[str], patterns: List[str]):
@@ -88,6 +105,49 @@ def svo_extract(text: str, model: Language) -> List[SVO]:
                             phrase += adj + " " + sub_tok.text
                             svo_ls.append(phrase.strip())
     return svo_triples(svo_ls, model)
+
+
+def svo_triples(svo_ls: List[str], model: Language) -> List[SVO]:
+    triples = []
+    for svo in svo_ls:
+        svo_obj = SVO()
+        if len(svo.split()) == 3:
+            subj, verb, obj = svo.split()
+            svo_obj.subj = RESOLVED if subj.lower() in PRONOUNS else subj
+            svo_obj.verb = verb
+            svo_obj.obj = RESOLVED if obj.lower() in PRONOUNS else obj
+        else:
+            dep_tree = model(svo)
+            is_verb_detected = False
+            for token in dep_tree:
+                if token.pos_ == "VERB" or token.dep_ == "ROOT":
+                    svo_obj.verb = token.text
+                    is_verb_detected = True
+                    continue
+                if not is_verb_detected:
+                    if not svo_obj.subj:
+                        svo_obj.subj = (
+                            token.text
+                            if token.text.lower() not in PRONOUNS
+                            else RESOLVED
+                        )
+                    else:
+                        svo_obj.subj = " ".join([svo_obj.subj, token.text])
+                else:
+                    if not svo_obj.obj:
+                        svo_obj.obj = (
+                            token.text
+                            if token.text.lower() not in PRONOUNS
+                            else RESOLVED
+                        )
+                    else:
+                        svo_obj.obj = " ".join([svo_obj.obj, token.text])
+        if svo_obj.invalid():
+            continue
+        if svo_obj in triples:
+            continue
+        triples.append(svo_obj)
+    return triples
 
 
 def spo(text: List[str], tagger: CoreNLPParser) -> Set[SPO]:
@@ -195,3 +255,40 @@ def get_attributes(word) -> List[str]:
         if attr_ not in FUNCTION_WORDS:
             clean_attrs.append(attr_)
     return clean_attrs
+
+
+def named_entity_recognition(text: str, model: Language) -> Set[SVO]:
+    ner = model(text)
+    svo_ls = list()
+    for entity in ner.ents:
+        if entity.label_ in ALGORITHM or entity.label_ in SOFTWARE:
+            svo_ls.append(
+                SVO(
+                    subj=RESOLVED,
+                    verb="use",
+                    obj=entity.text,
+                    subj_ner=RESOLVED.upper(),
+                    obj_ner=entity.label_,
+                )
+            )
+        elif entity.label_ in LIBRARY:
+            svo_ls.append(
+                SVO(
+                    subj=RESOLVED,
+                    verb="depend on",
+                    obj=entity.text,
+                    subj_ner=RESOLVED.upper(),
+                    obj_ner=entity.label_,
+                )
+            )
+        elif entity.label_ in EXECUTION_UNIT:
+            svo_ls.append(
+                SVO(
+                    subj=RESOLVED,
+                    verb="utilize",
+                    obj=entity.text,
+                    subj_ner=RESOLVED.upper(),
+                    obj_ner=entity.label_,
+                )
+            )
+    return set(svo_ls)

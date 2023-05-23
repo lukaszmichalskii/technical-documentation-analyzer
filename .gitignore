@@ -189,6 +189,3 @@ results/
 
 # app execution logs file
 **/execution.log
-
-# nlp models
-/src/nlp/models/crosslingual-coreference/minilm/model.tar.gz
