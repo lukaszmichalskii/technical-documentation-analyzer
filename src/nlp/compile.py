@@ -16,5 +16,8 @@ def compile_nlp(model: str, pipeline: List[str]) -> Tuple[Language, Language]:
             "xx_coref", config={"chunk_size": 2500, "chunk_overlap": 2, "device": -1}
         )
     if PIPELINE.NER in pipeline:
-        ner = spacy.load(NLP.joinpath("models/ner"))
+        try:
+            ner = spacy.load(NLP.joinpath("models/ner"))
+        except IOError:
+            ner = None
     return lang, ner

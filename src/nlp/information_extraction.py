@@ -31,9 +31,10 @@ RESOLVED = "System"
 LIBRARY = ["LIBRARY"]
 ALGORITHM = ["ALGORITHM", "KALMAN FILTER", "YOLO", "SLAM"]
 SENSOR = ["SENSOR"]
-SOFTWARE = ["ROBOTIC OPERATING SYSTEM", "SOFTWARE"]
+SOFTWARE = ["SOFTWARE"]
 PROGRAMMING_LANGUAGE = ["PROGRAMMING LANGUAGE"]
 EXECUTION_UNIT = ["COMPUTING PLATFORM", "PROCESSING UNIT"]
+DATA_STRUCTURE = ["DATA STRUCTURE"]
 
 
 def content_filtering(sentences: List[str], patterns: List[str]):
@@ -261,34 +262,56 @@ def named_entity_recognition(text: str, model: Language) -> Set[SVO]:
     ner = model(text)
     svo_ls = list()
     for entity in ner.ents:
-        if entity.label_ in ALGORITHM or entity.label_ in SOFTWARE:
-            svo_ls.append(
-                SVO(
-                    subj=RESOLVED,
-                    verb="use",
-                    obj=entity.text,
-                    subj_ner=RESOLVED.upper(),
-                    obj_ner=entity.label_,
-                )
-            )
-        elif entity.label_ in LIBRARY:
-            svo_ls.append(
-                SVO(
-                    subj=RESOLVED,
-                    verb="depend on",
-                    obj=entity.text,
-                    subj_ner=RESOLVED.upper(),
-                    obj_ner=entity.label_,
-                )
-            )
-        elif entity.label_ in EXECUTION_UNIT:
-            svo_ls.append(
-                SVO(
-                    subj=RESOLVED,
-                    verb="utilize",
-                    obj=entity.text,
-                    subj_ner=RESOLVED.upper(),
-                    obj_ner=entity.label_,
-                )
-            )
+        linked_entities = assembly_ner(entity)
+        if linked_entities:
+            svo_ls.extend(linked_entities)
     return set(svo_ls)
+
+
+def assembly_ner(entity) -> List[SVO]:
+    svo_ls = list()
+    if (
+        entity.label_ in ALGORITHM
+        or entity.label_ in SOFTWARE
+        or entity.label_ in DATA_STRUCTURE
+    ):
+        svo_ls.append(
+            SVO(
+                subj=RESOLVED,
+                verb="use",
+                obj=entity.text,
+                subj_ner=RESOLVED.upper(),
+                obj_ner=entity.label_,
+            )
+        )
+    elif entity.label_ in LIBRARY:
+        svo_ls.append(
+            SVO(
+                subj=RESOLVED,
+                verb="depend on",
+                obj=entity.text,
+                subj_ner=RESOLVED.upper(),
+                obj_ner=entity.label_,
+            )
+        )
+    elif entity.label_ in EXECUTION_UNIT or entity.label_ in SENSOR:
+        svo_ls.append(
+            SVO(
+                subj=RESOLVED,
+                verb="utilize",
+                obj=entity.text,
+                subj_ner=RESOLVED.upper(),
+                obj_ner=entity.label_,
+            )
+        )
+    elif entity.label_ in PROGRAMMING_LANGUAGE:
+        svo_ls.append(
+            SVO(
+                subj=RESOLVED,
+                verb="developed",
+                obj=entity.text,
+                subj_ner=RESOLVED.upper(),
+                obj_ner=entity.label_,
+            )
+        )
+    return svo_ls

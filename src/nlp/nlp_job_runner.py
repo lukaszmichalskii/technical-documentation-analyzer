@@ -201,8 +201,8 @@ class NLPJobRunner:
         start = time.time()
         if PIPELINE.NER in self.pipeline:
             self.logger.warn(
-                "Named entity recognition run on pre-trained model specified for autonomous cars industry."
-                "If documentation is not related with topic process will have corrupted impact on results."
+                "Named entity recognition run on pre-trained model specified for autonomous cars industry. "
+                "If documentation is not related to topic, results might be corrupted. "
                 "Consider turning off NER job from Information Extraction pipeline."
             )
             named_entities = named_entity_recognition(self.documentation, self.ner)
