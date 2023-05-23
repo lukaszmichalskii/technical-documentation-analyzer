@@ -1,19 +1,55 @@
 from rdflib import Graph
-from src.nlp.triples import SVO
+from src.nlp.triples import SVO, SPO
 
-example = [SVO(subj='Simultaneous localization', verb='create', obj='map', subj_ner=['jak', 'wół'], obj_ner=[]),
-           SVO(subj='system', verb='', obj='Simultaneous localization', subj_ner=[], obj_ner=[]),
-           SVO(subj='system', verb='represent', obj='map object', subj_ner=[], obj_ner=[]),
-           SVO(subj='Landmark', verb='represent', obj='various things', subj_ner=[], obj_ner=[]),
-           SVO(subj='SLAM', verb='give', obj='good results', subj_ner=[], obj_ner=['jak']),
-           SVO(subj='approach', verb='have', obj='big advantage', subj_ner=[], obj_ner=[]),
-           SVO(subj='particles', verb='share', obj='same history', subj_ner=[], obj_ner=[]),
-           SVO(subj='particle', verb='create', obj='new path', subj_ner=[], obj_ner=[])]
+example = [SVO(subj='System', verb='have', obj='cones', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='use', obj='YOLOv5', subj_ner='SYSTEM', obj_ner='ALGORITHM'),
+           SVO(subj='System', verb='utilize', obj='GPU', subj_ner='SYSTEM', obj_ner='PROCESSING UNIT'),
+           SVO(subj='System', verb='produce', obj='distance', subj_ner='', obj_ner=''),
+           SVO(subj='copy', verb='flatten', obj='vector', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='make', obj='lot', subj_ner='', obj_ner=''),
+           SVO(subj='List', verb='CUDA', obj='Toolkit', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='use', obj='Docker', subj_ner='SYSTEM', obj_ner='SOFTWARE'),
+           SVO(subj='System', verb='perform', obj='merging', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='depend on', obj='PyTorch', subj_ner='SYSTEM', obj_ner='LIBRARY'),
+           SVO(subj='System', verb='depend on', obj='PyCuda', subj_ner='SYSTEM', obj_ner='LIBRARY'),
+           SVO(subj='System', verb='utilize', obj='gpu', subj_ner='SYSTEM', obj_ner='PROCESSING UNIT'),
+           SVO(subj='System', verb='create', obj='File', subj_ner='', obj_ner=''),
+           SVO(subj='inference', verb='prepare', obj='buffers', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='have', obj='list', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='divide', obj='lot', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='make', obj='changes', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='depend on', obj='CUDA Toolkit', subj_ner='SYSTEM', obj_ner='LIBRARY'),
+           SVO(subj='System', verb='depend on', obj='TensorRT', subj_ner='SYSTEM', obj_ner='LIBRARY'),
+           SVO(subj='System', verb='utilize', obj='NVIDIA Jetson Agx Xavier', subj_ner='SYSTEM',
+               obj_ner='COMPUTING PLATFORM'),
+           SVO(subj='System', verb='perform', obj='padding', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='utilize', obj='NVIDIA Jetson AGX Xavier', subj_ner='SYSTEM',
+               obj_ner='COMPUTING PLATFORM'),
+           SVO(subj='System', verb='use', obj='ZED SDK', subj_ner='SYSTEM', obj_ner='SOFTWARE'),
+           SVO(subj='System', verb='have', obj='boxes', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='use', obj='ROS2', subj_ner='SYSTEM', obj_ner='SOFTWARE'),
+           SVO(subj='image', verb='have', obj='new size', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='use', obj='ZED SDK s', subj_ner='SYSTEM', obj_ner='SOFTWARE'),
+           SVO(subj='System', verb='make', obj='tests', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='utilize', obj='autonomous system main unit', subj_ner='SYSTEM',
+               obj_ner='COMPUTING PLATFORM'),
+           SVO(subj='objects', verb='map', obj='pixels', subj_ner='', obj_ner=''),
+           SVO(subj='System', verb='depend on', obj='CuDNN', subj_ner='SYSTEM', obj_ner='LIBRARY'),
+           SVO(subj='System', verb='use', obj='NVIDIA tensorrt', subj_ner='SYSTEM', obj_ner='SOFTWARE'),
+           SVO(subj='System', verb='use', obj='Non Maximum Suppression', subj_ner='SYSTEM', obj_ner='ALGORITHM')]
+
+
+def is_svo(triple):
+    return isinstance(triple, SVO)
+
+
+def is_spo(triple):
+    return isinstance(triple, SPO)
 
 
 def convert_to_rdf(triple_list):
     """
-    Converts SVO triples into RDF triples as turtle syntax
+    Converts SVO and SPO triples into RDF triples as turtle syntax
     Args:
         triple_list: SVO triples
     Returns:
@@ -24,28 +60,58 @@ def convert_to_rdf(triple_list):
 
     for triple in triple_list:
         subject = triple.subj.replace(" ", "_")
-        verb = triple.verb.replace(" ", "_")
         object = triple.obj.replace(" ", "_")
+        if is_svo(triple):
+            verb = triple.verb.replace(" ", "_")
 
-        subject_ner = triple.subj_ner
-        for sub in subject_ner:
-            sub.replace(" ", "_")
+            subject_ner = triple.subj_ner
+            if type(subject_ner) is list:
+                for sub in subject_ner:
+                    sub.replace(" ", "_")
+            else:
+                subject_ner = subject_ner.replace(" ", "_")
 
-        object_ner = triple.obj_ner
-        for ob in object_ner:
-            ob.replace(" ", "_")
+            object_ner = triple.obj_ner
+            if type(object_ner) is list:
+                for ob in object_ner:
+                    ob.replace(" ", "_")
+            else:
+                object_ner = object_ner.replace(" ", "_")
+        else:
+            verb = triple.pred.replace(" ", "_")
+
+            subject_ner = triple.subj_attrs
+            if type(subject_ner) is list:
+                for sub in subject_ner:
+                    sub.replace(" ", "_")
+            else:
+                subject_ner = subject_ner.replace(" ", "_")
+
+            object_ner = triple.obj_attrs
+            if type(object_ner) is list:
+                for ob in object_ner:
+                    ob.replace(" ", "_")
+            else:
+                object_ner = object_ner.replace(" ", "_")
 
         if verb:
             rdf_triples.append(f":{subject} :{verb} :{object} .")
 
         if subject_ner:
-            for item in subject_ner:
-                rdf_triples.append(f":{subject} rdf:type :{item} .")
+            if type(subject_ner) is list:
+                for item in subject_ner:
+                    rdf_triples.append(f":{subject} rdf:type :{item} .")
+            else:
+                rdf_triples.append(f":{subject} rdf:type :{subject_ner} .")
 
         if object_ner:
-            for item in object_ner:
-                rdf_triples.append(f":{object} rdf:type :{item} .")
+            if type(object_ner) is list:
+                for item in object_ner:
+                    rdf_triples.append(f":{object} rdf:type :{item} .")
+            else:
+                rdf_triples.append(f":{object} rdf:type :{object_ner} .")
 
+    print(rdf_triples)
     return rdf_triples
 
 
@@ -66,6 +132,8 @@ def make_turtle_syntax(rdf_triples):
     for triple in rdf_triples:
         turtle_syntax += triple + "\n"
 
+    print(turtle_syntax)
+
     return turtle_syntax
 
 
@@ -78,6 +146,8 @@ def make_graph(turtle):
     graph = Graph()
     graph.parse(data=turtle, format='turtle')
     graph.serialize('KG.ttl', format='turtle')
+
+    print(graph)
 
 
 if __name__ == "__main__":
