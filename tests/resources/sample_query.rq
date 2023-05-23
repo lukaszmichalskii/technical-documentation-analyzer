@@ -1,0 +1,26 @@
+### resuspend_cells_subprocedure_desc
+### get the description of the subprocess 8
+
+prefix sp: <http://purl.org/net/SMARTprotocol#>
+prefix ro: <http://www.obofoundry.org/ro/ro.owl#>
+
+SELECT ?subProcDesc
+FROM stardog:context:all
+WHERE {
+ ?protocolExecution a sp:ProtocolExecution;
+                    sp:hasProcedure ?procedure;
+                    sp:isDocumentedIn ?protocol .
+
+ ?protocol sp:hasTitle [ rdfs:label ?title ] .
+ ?procedure sp:hasSubprocedure ?subProcedure .
+
+ ?equipment <http://purl.obolibrary.org/obo/RO_0000056> ?subProcedure;
+            a <http://purl.bioontology.org/ontology/MSH/D004864>;
+            rdfs:label ?equipmentName .
+
+ ?subProcedure rdfs:label ?subProcedureLabel; sp:hasDescription [rdfs:label ?subProcDesc]
+
+ VALUES ?title {"[Bio101] Subcutaneous Injection of Tumor Cells"}
+ VALUES ?subProcedureLabel {"8. Resuspend cells in fresh PBS"}
+
+}

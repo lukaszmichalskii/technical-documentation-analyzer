@@ -131,10 +131,3 @@ class TestTextProvider(unittest.TestCase):
             NotSupportedDocumentFormat,
             lambda: list(self.text_provider.get_file_chunk(dummy_file)),
         )
-
-    def test_decode_text_txt_not_supported_format_exception(self) -> None:
-        txt_ = self.resources.joinpath("dir/text2.txt")
-        self.assertRaises(
-            NotSupportedDocumentFormat,
-            lambda: list(self.text_provider.get_file_chunk(txt_)),
-        )
