@@ -134,6 +134,9 @@ class TestInformationExtraction(unittest.TestCase):
             [SVO(subj="FastSLAM", obj="landmark map", verb="create")], results
         )
 
+    @unittest.skip(
+        "Requires a proprietary NER model, deactivated until project becomes open-source."
+    )
     def test_ner_detect_algorithm(self):
         textSLAM = "AS use FastSLAM for localisation and mapping."
         textTriangulation = "Path planner utilize Delaunay triangulation"
@@ -164,6 +167,9 @@ class TestInformationExtraction(unittest.TestCase):
             results_triangulation,
         )
 
+    @unittest.skip(
+        "Requires a proprietary NER model, deactivated until project becomes open-source."
+    )
     def test_ner_detect_libraries(self):
         text = "Module dependencies: TensorRT"
         results_libraries = named_entity_recognition(text, NER)
@@ -180,6 +186,9 @@ class TestInformationExtraction(unittest.TestCase):
             results_libraries,
         )
 
+    @unittest.skip(
+        "Requires a proprietary NER model, deactivated until project becomes open-source."
+    )
     def test_ner_detect_computing_platforms(self):
         textgpu = "Network is executed on GPU"
         textcpu = "Network is executed on CPU"
