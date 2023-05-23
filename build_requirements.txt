@@ -10,3 +10,4 @@ scipy~=1.10.1
 networkx~=3.1
 pandas
 matplotlib
+rdflib~=6.3.2
