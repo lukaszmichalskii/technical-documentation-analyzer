@@ -68,11 +68,12 @@ See the [Jira](https://samsung-kpz.atlassian.net/jira/software/c/projects/SAM/bo
 
 Project: [https://github.com/lukaszmichalskii/Samsung-KPZ](https://github.com/lukaszmichalskii/Samsung-KPZ)
 
-Authors:\
-Katarzyna Hajduk <259189@student.pwr.edu.pl>\
-Hubert Kustosz <259119@student.pwr.edu.pl>\
-Damian Łukasiewicz <259186@student.pwr.edu.pl>\
-Łukasz Michalski <261118@student.pwr.edu.pl>
+| Author       | Email                      |
+|--------------|----------------------------|
+| Katarzyna Hajduk | 259189@student.pwr.edu.pl  |
+| Hubert Kustosz | 259119@student.pwr.edu.pl  |
+| Damian Łukasiewicz | 259186@student.pwr.edu.pl  |
+| Łukasz Michalski | 261118@student.pwr.edu.pl  |
 
 
 <!-- MARKDOWN LINKS & IMAGES -->
