@@ -22,7 +22,7 @@
   <p align="center">
     Automatic construction of a semantic knowledge-graph based on content of technical documentation
     <br />
-    <a href="https://github.com/lukaszmichalskii/Samsung-KPZ"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/lukaszmichalskii/Samsung-KPZ/blob/master/MANUAL.md"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/lukaszmichalskii/Samsung-KPZ">View Demo</a>
