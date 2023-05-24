@@ -7,7 +7,6 @@ from src.application.text_processor import TextProcessor
 
 
 class TestTextProcessor(unittest.TestCase):
-
     @patch("subprocess.run")
     def test_process(self, mock_subprocess):
         mock_subprocess.return_value.returncode = 0

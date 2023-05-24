@@ -15,7 +15,9 @@ from src.application.common import (
     STEPS,
     STANDARD_STEPS,
     NLP_PIPELINE_JOBS,
-    SKIP_DECODING, RESULTS_FORMAT, PLUGIN_DEFAULT_PATH,
+    SKIP_DECODING,
+    RESULTS_FORMAT,
+    PLUGIN_DEFAULT_PATH,
 )
 from src.application.decompression import DecompressionError, NotSupportedArchiveFormat
 from src.application.text_processor import TextProcessor
@@ -96,7 +98,11 @@ def run_app(
                     shutil.copyfile(file, decoded_path(output).joinpath(file.name))
                     continue
                 logger.info(f"Decoding {file.name}...")
-                text_processor.process(parser_script_path, file, decoded_path(output).joinpath(file.stem + RESULTS_FORMAT))
+                text_processor.process(
+                    parser_script_path,
+                    file,
+                    decoded_path(output).joinpath(file.stem + RESULTS_FORMAT),
+                )
                 logger.info(f"{file} file has been parsed successfully.")
             except Exception as e:
                 logger.warning(f"Skipping file {file}. {str(e)}")
