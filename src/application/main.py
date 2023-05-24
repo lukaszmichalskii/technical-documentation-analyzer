@@ -83,9 +83,9 @@ def run_app(
     def copy_step() -> None:
         logger.info(f"Nothing to be decompressed.")
         if techdoc_path.is_dir():
-            decompression.copydir(techdoc_path, decoded_path(output))
+            decompression.copydir(techdoc_path, extracted_path(output))
         else:
-            shutil.copy2(techdoc_path, decoded_path(output))
+            shutil.copy2(techdoc_path, extracted_path(output))
 
     def decode_step() -> None:
         file_manager = FileManager(file_size_limit=environment.in_memory_file_limit)
@@ -95,7 +95,7 @@ def run_app(
                 if file.suffix in SKIP_DECODING:
                     shutil.copyfile(file, decoded_path(output).joinpath(file.name))
                     continue
-                logger.info(f"Decoding {file.stem}...")
+                logger.info(f"Decoding {file.name}...")
                 decoded_text = file_manager.decode_text(file)
                 logger.info(f"{file} file has been parsed successfully.")
                 file_manager.save_parsed_text(
@@ -159,6 +159,10 @@ def run_app(
     output = pathlib.Path(args.output)
     if not output.exists():
         output.mkdir()
+    if STEPS.DECOMPRESS not in args.only:
+        logger.error(f"Missing required step: 'decompress'.")
+        logger.info("App finished with exit code 1")
+        return 1
     if STEPS.DECOMPRESS in args.only:
         try:
             if (

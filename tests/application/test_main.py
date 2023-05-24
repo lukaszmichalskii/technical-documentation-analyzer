@@ -36,6 +36,20 @@ class TestMain(unittest.TestCase):
         finally:
             os.chdir(cwd)
 
+    def test_app_fail_on_broken_pipeline_setup(self):
+        with mock_logger.MockLogger() as logger:
+            self.assertEqual(
+                1,
+                self.main(["--techdoc_path", "test.pdf", "--only", "decode"]),
+            )
+            self.assertIn(
+                (
+                    "ERROR",
+                    "Missing required step: 'decompress'.",
+                ),
+                logger.messages,
+            )
+
     def test_decompress_zip_archive(self):
         zipfile_ = self.archives.joinpath("zipfile.zip")
         self.assertEqual(
@@ -88,7 +102,7 @@ class TestMain(unittest.TestCase):
                 logger.messages,
             )
             self.assertIn(
-                ("INFO", "Decoding lorem-ipsum..."),
+                ("INFO", "Decoding lorem-ipsum.pdf..."),
                 logger.messages,
             )
 
@@ -117,7 +131,7 @@ class TestMain(unittest.TestCase):
             self.assertIn(
                 (
                     "INFO",
-                    "results/decoded/sample.pdf file has been parsed successfully.",
+                    "results/extracted/sample.pdf file has been parsed successfully.",
                 ),
                 logger.messages,
             )
