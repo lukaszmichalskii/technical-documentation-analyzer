@@ -15,11 +15,11 @@ from src.application.common import (
     STEPS,
     STANDARD_STEPS,
     NLP_PIPELINE_JOBS,
-    SKIP_DECODING,
+    SKIP_DECODING, RESULTS_FORMAT, PLUGIN_DEFAULT_PATH,
 )
 from src.application.decompression import DecompressionError, NotSupportedArchiveFormat
-from src.application.file_manager import FileManager
-from src.application.text_provider import NotSupportedDocumentFormat
+from src.application.text_processor import TextProcessor
+from src.application.file_manager import files_in_dir
 
 
 def get_help_epilog():
@@ -88,23 +88,17 @@ def run_app(
             shutil.copy2(techdoc_path, extracted_path(output))
 
     def decode_step() -> None:
-        file_manager = FileManager(file_size_limit=environment.in_memory_file_limit)
-        for file in FileManager.files_in_dir(output):
+        text_processor = TextProcessor()
+        for file in files_in_dir(output):
             try:
                 file = pathlib.Path(file)
                 if file.suffix in SKIP_DECODING:
                     shutil.copyfile(file, decoded_path(output).joinpath(file.name))
                     continue
                 logger.info(f"Decoding {file.name}...")
-                decoded_text = file_manager.decode_text(file)
+                text_processor.process(parser_script_path, file, decoded_path(output).joinpath(file.stem + RESULTS_FORMAT))
                 logger.info(f"{file} file has been parsed successfully.")
-                file_manager.save_parsed_text(
-                    decoded_path(output).joinpath(
-                        file.name.split(".")[0] + common.RESULTS_FORMAT
-                    ),
-                    decoded_text,
-                )
-            except NotSupportedDocumentFormat as e:
+            except Exception as e:
                 logger.warning(f"Skipping file {file}. {str(e)}")
                 continue
 
@@ -112,7 +106,7 @@ def run_app(
         nlp_analizer = NLPJobRunner(
             logger, pipeline=NLP_PIPELINE_JOBS, model=environment.spacy_model
         )
-        for file in FileManager.files_in_dir(decoded_path(output)):
+        for file in files_in_dir(decoded_path(output)):
             with open(file) as fd:
                 text = fd.read()
             filename = pathlib.Path(file)
@@ -157,6 +151,7 @@ def run_app(
 
     techdoc_path = pathlib.Path(args.techdoc_path)
     output = pathlib.Path(args.output)
+    parser_script_path = pathlib.Path(args.parser_script_path)
     if not output.exists():
         output.mkdir()
     if STEPS.DECOMPRESS not in args.only:
@@ -175,7 +170,6 @@ def run_app(
         except (
             DecompressionError,
             NotSupportedArchiveFormat,
-            NotSupportedDocumentFormat,
         ) as e:
             logger.error(str(e))
             logger.info("App finished with exit code 1")
@@ -204,6 +198,13 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
         required=True,
         help="path to the compressed documentation file/s (.zip and .tar.xz compressed only), directory with already decompressed files or single file (supported document formats: .pdf, .docx)",
         metavar="path",
+    )
+    parser.add_argument(
+        "--parser_script_path",
+        type=str,
+        help="path to the parser script",
+        metavar="path",
+        default=PLUGIN_DEFAULT_PATH,
     )
     parser.add_argument(
         "--only",
