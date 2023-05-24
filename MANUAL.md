@@ -11,13 +11,15 @@
 ## Table of Contents
 - [More About TDA](#more-about-tda)
   - [Technical Documentation Analyzer](#technical-documentation-analyzer)
+  - [Deep Convolutional Neural Network](#deep-convolutional-neural-network)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Get the TDA source](#get-the-tda-source)
   - [Install Dependencies](#install-dependencies)
-    - [Notes](#install-cuda-pytorch)
+    - [Setup CoreNLP dependency](#setup-corenlp-dependency)
+    - [NER model configuration](#ner-model-configuration)
 - [Getting Started](#getting-started)
-- [License](#license)
+- [Copyright](#license)
 
 
 ## More About TDA
