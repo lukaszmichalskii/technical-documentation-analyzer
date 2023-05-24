@@ -17,7 +17,7 @@
     <img src="docs/logo.png" alt="Logo" width="200" height="200">
   </a>
 
-  <h3 align="center">Samsung KPZ</h3>
+  <h3 align="center">Technical Documentation Analyzer</h3>
 
   <p align="center">
     Automatic construction of a semantic knowledge-graph based on content of technical documentation
