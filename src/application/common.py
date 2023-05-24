@@ -25,7 +25,7 @@ SUPPORTED_DOCUMENTS = {".docx", ".pdf", ".txt"}
 SKIP_DECODING = [".txt"]  # assume txt file contains standard charset
 RESULTS_FORMAT = ".txt"
 
-PLUGIN_DEFAULT_PATH = PLUGINS.joinpath("processing_script.py")
+PLUGIN_DEFAULT_PATH = PLUGINS.joinpath("default_plugin.py")
 
 ########################################################################################################################
 ############################### NATURAL LANGUAGE PROCESSING PIPELINE ###################################################

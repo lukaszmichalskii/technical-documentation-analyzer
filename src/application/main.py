@@ -6,6 +6,7 @@ import os.path
 import pathlib
 import shutil
 import sys
+import traceback
 import typing
 
 from src.nlp.nlp_job_runner import NLPJobRunner
@@ -40,10 +41,8 @@ Examples:
     python skg_app.py --techdoc_path input_path --output results_dir
     Decompress only files
     python skg_app.py --techdoc_path example.zip --output results_dir --only decompress
-    Decode only file
-    python skg_app.py --techdoc_path example.pdf --output results_dir --only decode
-    Decode only files
-    python skg_app.py --techdoc_path examples/ --output results_dir --only decode
+    Information extraction
+    python skg_app.py --techdoc_path example.zip --only decompress decode information_extraction
     
 More info: <confluence manual url>"""
 
@@ -99,13 +98,15 @@ def run_app(
                     continue
                 logger.info(f"Decoding {file.name}...")
                 text_processor.process(
-                    parser_script_path,
+                    plugin_path,
                     file,
                     decoded_path(output).joinpath(file.stem + RESULTS_FORMAT),
                 )
                 logger.info(f"{file} file has been parsed successfully.")
-            except Exception as e:
-                logger.warning(f"Skipping file {file}. {str(e)}")
+            except Exception:
+                logger.warning(
+                    f"Unable to decode, skipping {file.name} file. Details: {traceback.format_exc()}"
+                )
                 continue
 
     def information_extraction_step():
@@ -157,7 +158,7 @@ def run_app(
 
     techdoc_path = pathlib.Path(args.techdoc_path)
     output = pathlib.Path(args.output)
-    parser_script_path = pathlib.Path(args.parser_script_path)
+    plugin_path = pathlib.Path(args.plugin)
     if not output.exists():
         output.mkdir()
     if STEPS.DECOMPRESS not in args.only:
@@ -183,6 +184,10 @@ def run_app(
     if STEPS.DECODE in args.only:
         decode_step()
     if STEPS.INFORMATION_EXTRACTION in args.only:
+        if len(files_in_dir(decoded_path(output))) == 0:
+            logger.error("Plugin failed to decode provided files, nothing to analyze.")
+            logger.info("App finished with exit code 3")
+            return 3
         logger.info("Information extraction...")
         information_extraction_step()
     logger.info("App finished with exit code 0")
@@ -206,9 +211,9 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
         metavar="path",
     )
     parser.add_argument(
-        "--parser_script_path",
+        "--plugin",
         type=str,
-        help="path to the parser script",
+        help="path to the plugin",
         metavar="path",
         default=PLUGIN_DEFAULT_PATH,
     )

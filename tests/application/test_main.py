@@ -36,7 +36,7 @@ class TestMain(unittest.TestCase):
         finally:
             os.chdir(cwd)
 
-    def test_app_fail_on_broken_pipeline_setup(self):
+    def test_fail_on_broken_pipeline_setup(self):
         with mock_logger.MockLogger() as logger:
             self.assertEqual(
                 1,
@@ -49,6 +49,46 @@ class TestMain(unittest.TestCase):
                 ),
                 logger.messages,
             )
+
+    def test_abandon_execution_when_plugin_do_not_decode_at_all(self):
+        file = self.archives.parent.joinpath("dir/sample.pdf")
+        with mock_logger.MockLogger() as logger:
+            self.assertEqual(
+                3,
+                self.main(["--techdoc_path", str(file), "--plugin", "plugin.txt"]),
+            )
+            self.assertIn(
+                (
+                    "ERROR",
+                    "Plugin failed to decode provided files, nothing to analyze.",
+                ),
+                logger.messages,
+            )
+
+    def test_skip_file_if_plugin_fail_to_decode(self):
+        directory = self.archives.parent.joinpath("dir")
+        self.assertEqual(
+            0,
+            self.main(
+                ["--techdoc_path", str(directory), "--only", "decompress", "decode"]
+            ),
+        )
+        self.assertEqual(
+            sorted(
+                [
+                    "lorem-ipsum.pdf",
+                    "lorem-ipsum.txt",
+                    "not_supported.csv",
+                    "sample.pdf",
+                    "sample.txt",
+                    "text1.txt",
+                    "text1.txt",
+                    "text2.txt",
+                    "text2.txt",
+                ]
+            ),
+            sorted(utils.files_in_dir(pathlib.Path(self.temp).joinpath("results"))),
+        )
 
     def test_decompress_zip_archive(self):
         zipfile_ = self.archives.joinpath("zipfile.zip")

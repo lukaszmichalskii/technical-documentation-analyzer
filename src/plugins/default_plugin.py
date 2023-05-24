@@ -17,6 +17,24 @@ class NotSupportedDocumentFormat(Exception):
     pass
 
 
+def read_file(
+    file_obj: typing.IO[str | bytes], chunk_size: int = 1024 * 32
+) -> typing.Generator[str, None, None]:
+    """
+    Read file content to memory buffer
+    Args:
+        file_obj: file descriptor
+        chunk_size: memory buffer size, default is 32KiB
+    Returns:
+         buffer filled with file_obj content
+    """
+    while True:
+        text = file_obj.read(chunk_size)
+        if not text:
+            break
+        yield text
+
+
 def _read_all(
     fd, buffer_read_fn: typing.Callable[[typing.IO[str | bytes]], str]
 ) -> str:
