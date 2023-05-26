@@ -9,6 +9,7 @@ import sys
 import traceback
 import typing
 
+from src.knowledge_graph.make_rdf_triples import convert_to_rdf, make_turtle_syntax, make_graph
 from src.nlp.nlp_job_runner import NLPJobRunner
 from src.application import common, decompression, logs
 from src.application.common import (
