@@ -217,7 +217,7 @@ def save_parsed_text(
     destination: pathlib.Path,
     parsed_text: str | typing.Generator[str, None, None],
 ) -> None:
-    with open(destination, "w") as fd:
+    with open(destination, "w", encoding="UTF-8") as fd:
         if isinstance(parsed_text, types.GeneratorType):
             for text in parsed_text:
                 fd.write(text)
