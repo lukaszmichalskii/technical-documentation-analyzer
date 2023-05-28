@@ -1,6 +1,3 @@
-import os
-import requests
-from rdflib import Graph
 from src.nlp.triples import SVO, SPO
 
 
@@ -27,8 +24,8 @@ def convert_to_rdf(triple_list):
     for triple in triple_list:
         subject = triple.subj.replace(" ", "_")
         object = triple.obj.replace(" ", "_")
-        link_subject = link + subject.capitalize()
-        link_object = link + object.capitalize()
+        link_subject = link + (subject[0].upper() + subject[1:])
+        link_object = link + (object[0].upper() + object[1:])
 
         if is_svo(triple):
             subject_attrs = False
@@ -65,17 +62,14 @@ def convert_to_rdf(triple_list):
             if type(object_ner) is list:
                 for ob in object_ner:
                     ob.replace(" ", "_")
+            else:
+                object_ner = object_ner.replace(" ", "_")
 
         if verb:
             rdf_triples.append(f":{subject} :{verb} :{object} .")
 
-        responseS = requests.get(link_subject, timeout=5)
-        responseO = requests.get(link_object, timeout=5)
-
-        if responseS.status_code == 200:
-            rdf_triples.append(f":{subject} rdfs:seeAlso <{link_subject}> .")
-        if responseO.status_code == 200:
-            rdf_triples.append(f":{object} rdfs:seeAlso <{link_object}> .")
+        rdf_triples.append(f":{subject} rdfs:seeAlso <{link_subject}> .")
+        rdf_triples.append(f":{object} rdfs:seeAlso <{link_object}> .")
 
         if subject_ner:
             if type(subject_ner) is list:
@@ -94,16 +88,16 @@ def convert_to_rdf(triple_list):
         if subject_attrs:
             if type(subject_attrs) is list:
                 for item in subject_attrs:
-                    rdf_triples.append(f":{subject} rdfs:comment \"{item}\" .")
+                    rdf_triples.append(f':{subject} rdfs:comment "{item}" .')
             else:
-                rdf_triples.append(f":{subject} rdfs:comment \"{subject_attrs}\" .")
+                rdf_triples.append(f':{subject} rdfs:comment "{subject_attrs}" .')
 
         if object_attrs:
             if type(object_attrs) is list:
                 for item in object_attrs:
-                    rdf_triples.append(f":{object} rdfs:comment \"{item}\" .")
+                    rdf_triples.append(f':{object} rdfs:comment "{item}" .')
             else:
-                rdf_triples.append(f":{object} rdfs:comment \"{object_attrs}\" .")
+                rdf_triples.append(f':{object} rdfs:comment "{object_attrs}" .')
 
     return rdf_triples
 
@@ -126,27 +120,3 @@ def make_turtle_syntax(rdf_triples):
         turtle_syntax += triple + "\n"
 
     return turtle_syntax
-
-
-def make_graph(turtle, name):
-    """
-    Serializes graph and creates file with knowledge graph as turtle syntax
-    Args:
-        turtle: turtle syntax before serialization
-        name: name of an output file
-    """
-
-    graph_directory = os.path.join(os.path.dirname(os.getcwd()), "src\\results\\graph")
-    if not os.path.exists(graph_directory):
-        os.makedirs(graph_directory)
-
-    directory_path = os.path.join(graph_directory, name)
-    if not os.path.exists(directory_path):
-        os.makedirs(directory_path)
-
-    name += ".ttl"
-    file_path = os.path.join(directory_path, name)
-
-    graph = Graph()
-    graph.parse(data=turtle, format='turtle')
-    graph.serialize(file_path, format='turtle')
