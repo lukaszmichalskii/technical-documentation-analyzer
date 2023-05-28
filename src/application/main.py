@@ -21,7 +21,7 @@ from src.application.common import (
     PLUGIN_DEFAULT_PATH,
 )
 from src.application.decompression import DecompressionError, NotSupportedArchiveFormat
-from src.application.text_processor import TextProcessor
+from src.application.plugin_executor import execute_plugin
 from src.application.file_manager import files_in_dir
 
 
@@ -89,7 +89,6 @@ def run_app(
             shutil.copy2(techdoc_path, extracted_path(output))
 
     def decode_step() -> None:
-        text_processor = TextProcessor()
         for file in files_in_dir(output):
             try:
                 file = pathlib.Path(file)
@@ -97,7 +96,7 @@ def run_app(
                     shutil.copyfile(file, decoded_path(output).joinpath(file.name))
                     continue
                 logger.info(f"Decoding {file.name}...")
-                text_processor.process(
+                execute_plugin(
                     plugin_path,
                     file,
                     decoded_path(output).joinpath(file.stem + RESULTS_FORMAT),
