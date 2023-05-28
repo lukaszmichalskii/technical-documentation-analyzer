@@ -1,9 +1,10 @@
 import subprocess
+import sys
 import unittest
 from unittest.mock import patch
 import tempfile
 import pathlib
-from src.application.text_processor import TextProcessor
+from src.application.plugin_executor import execute_plugin
 
 
 class TestTextProcessor(unittest.TestCase):
@@ -21,11 +22,10 @@ class TestTextProcessor(unittest.TestCase):
         input_filepath.touch()
         output_filepath.touch()
 
-        processor = TextProcessor()
-        processor.process(script_path, input_filepath, output_filepath)
+        execute_plugin(script_path, input_filepath, output_filepath)
 
         mock_subprocess.assert_called_with(
-            [processor.python_command, script_path, input_filepath, output_filepath],
+            [sys.executable, script_path, input_filepath, output_filepath],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
@@ -44,9 +44,8 @@ class TestTextProcessor(unittest.TestCase):
         input_filepath.touch()
         output_filepath.touch()
 
-        processor = TextProcessor()
         with self.assertRaises(ValueError):
-            processor.process(script_path, input_filepath, output_filepath)
+            execute_plugin(script_path, input_filepath, output_filepath)
 
         # Cleanup
         temp_dir.cleanup()
