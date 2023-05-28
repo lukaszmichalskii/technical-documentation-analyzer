@@ -128,6 +128,7 @@ def run_app(
             model=environment.spacy_model,
             tfidf_param=args.tfidf,
             compile_on=environment.processing_unit,
+            operating_system=environment.os,
         )
         for file in files_in_dir(decoded_path(output)):
             with open(file) as fd:
