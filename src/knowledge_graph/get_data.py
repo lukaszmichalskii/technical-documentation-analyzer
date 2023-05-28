@@ -79,7 +79,9 @@ def convert_txt_to_spo(file_path):
                       pred=elem_spo[1].strip(),
                       obj=elem_spo[2].strip(),
                       subj_attrs=elem_spo[3].strip(),
-                      obj_attrs=elem_spo[4].strip())
+                      obj_attrs=elem_spo[4].strip(),
+                      subj_ner=elem_svo[5].strip(),
+                      obj_ner=elem_svo[6].strip())
             spo_list.append(spo)
 
     return spo_list

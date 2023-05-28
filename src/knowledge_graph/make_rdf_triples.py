@@ -1,5 +1,5 @@
 import os
-
+import requests
 from rdflib import Graph
 from src.nlp.triples import SVO, SPO
 
@@ -27,8 +27,8 @@ def convert_to_rdf(triple_list):
     for triple in triple_list:
         subject = triple.subj.replace(" ", "_")
         object = triple.obj.replace(" ", "_")
-        link_subject = link + subject
-        link_object = link + object
+        link_subject = link + subject.capitalize()
+        link_object = link + object.capitalize()
 
         if is_svo(triple):
             subject_attrs = False
@@ -49,18 +49,33 @@ def convert_to_rdf(triple_list):
             else:
                 object_ner = object_ner.replace(" ", "_")
         else:
-            subject_ner = False
-            object_ner = False
             verb = triple.pred.replace(" ", "_")
 
             subject_attrs = triple.subj_attrs
             object_attrs = triple.obj_attrs
 
+            subject_ner = triple.subj_ner
+            if type(subject_ner) is list:
+                for sub in subject_ner:
+                    sub.replace(" ", "_")
+            else:
+                subject_ner = subject_ner.replace(" ", "_")
+
+            object_ner = triple.obj_ner
+            if type(object_ner) is list:
+                for ob in object_ner:
+                    ob.replace(" ", "_")
+
         if verb:
             rdf_triples.append(f":{subject} :{verb} :{object} .")
 
-        rdf_triples.append(f":{subject} rdfs:seeAlso <{link_subject}> .")
-        rdf_triples.append(f":{object} rdfs:seeAlso <{link_object}> .")
+        responseS = requests.get(link_subject, timeout=5)
+        responseO = requests.get(link_object, timeout=5)
+
+        if responseS.status_code == 200:
+            rdf_triples.append(f":{subject} rdfs:seeAlso <{link_subject}> .")
+        if responseO.status_code == 200:
+            rdf_triples.append(f":{object} rdfs:seeAlso <{link_object}> .")
 
         if subject_ner:
             if type(subject_ner) is list:
