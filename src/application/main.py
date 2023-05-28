@@ -53,16 +53,21 @@ Environment variables:
                           will handle calculations. Requires CUDA configuration, gives much better performance even on
                           large language models.
                           Default: 0
+    STARDOG_ENDPOINT    : Stardog database endpoint URL
+    STARDOG_USERNAME    : Stardog database username
+    STARDOG_PASSWORD    : Stardog database password
                           
 Examples:
     Autodetect what to do
-    python skg_app.py --techdoc_path input_path --output results_dir
+    python skg_app.py --techdoc_path input_path --output results_dir --db_name database_name
     Decompress only files
     python skg_app.py --techdoc_path example.zip --output results_dir --only decompress
     Information extraction only, abandon graph serialization
     python skg_app.py --techdoc_path example.zip --only decompress decode information_extraction
     TF-IDF analysis only 
     python skg_app.py --techdoc_path docs.pdf --pipeline term_frequencies_inverse_document_frequency
+    Provide custom text processing plugin
+    python skg_app.py --techdoc_path input_path --plugin custom_plugin.py
     
 More info: https://github.com/lukaszmichalskii/Samsung-KPZ/blob/master/MANUAL.md"""
 
@@ -300,7 +305,7 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
     parser.add_argument(
         "--plugin",
         type=str,
-        help="path to the plugin",
+        help="path to the text processing plugin",
         metavar="path",
         default=PLUGIN_DEFAULT_PATH,
     )

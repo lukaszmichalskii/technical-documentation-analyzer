@@ -19,6 +19,7 @@
     - [Setup CoreNLP dependency](#setup-corenlp-dependency)
     - [NER model configuration](#ner-model-configuration)
 - [Getting Started](#getting-started)
+  - [Adjust running options](#adjust-running-options)
 - [Copyright](#license)
 
 
@@ -110,7 +111,6 @@ java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -t
 > [main] INFO CoreNLP - Starting server...
 > [main] INFO CoreNLP - StanfordCoreNLPServer listening at /[0:0:0:0:0:0:0:0]:9000
 > ```
-> CoreNLPServer might not be detected on Windows OS, this is known issue and is actively investigated.
 
 
 #### NER model configuration
@@ -121,7 +121,7 @@ connected with documentation follow steps below and replace mentioned model.
 Navigate to `src/nlp/models` directory and create `ner` directory, then place all extracted files into that dir:
 ```bash
 # navigate to models dir (from project root) and create ner
-cd src/nlp/models/* && mkdir ner
+cd src/nlp/models && mkdir ner
 # move all files from extracted model directory to ner directory
 mv <extracted_model_absolute_path> ner
 ```
@@ -145,7 +145,7 @@ python3 src/skg_app.py --techdoc_path <path_to_documentation>
 ```
 
 Execution could be configured using `--only` argument, this allows to specify which jobs to run. The below command will run only decompress,
-decode and information_extraction steps, serialization of results in StarDog is skipped:
+decode and information_extraction steps.
 
 ```bash
 python3 src/skg_app.py --techdoc_path <path_to_documentation> --only decompress decode information_extraction
@@ -159,24 +159,46 @@ exist system will automatically create provided directory tree.
 python3 src/skg_app.py --techdoc_path <path_to_documentation> --output <path_to_output>
 ```
 
-#### Visualization
-If you want to save graph structure from run to image enable `--visualize` flag when running application.
+To serialize results to StarDog database provide database name with `--db_name` argument. 
 
 ```bash
-python3 src/skg_app.py --techdoc_path <path_to_documentation> --visualize
+python3 src/skg_app.py --techdoc_path <path_to_documentation> --db_name <database_name>
 ```
 
-> _Aside:_ This option is not recommended. Please use visualization feature provided in StarDog database
->
+#### Text processing plugin
+
+By default, application uses `src/plugins/default_plugin.py` as text processing plugin. Custom plugin can be used with --path argument.
+
+```bash
+python3 src/skg_app.py --techdoc_path <path_to_documentation> --plugin <path_to_plugin>
+```
+
+### Adjust running options
+
+Arguments for adjusting running options:
+
+| Argument         | Description                                                                                                                                                                        | Default                                                              |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
+| `--techdoc_path` | Path to the compressed documentation file/s (.zip and .tar.xz compressed only), directory with already decompressed files or single file (supported document formats: .pdf, .docx) | None                                                                 |
+| `--plugin`       | Path to the text parsing plugin                                                                                                                                                    | src/plugins/default_plugin.py                                        |
+| `--only`         | Specifies actions which should be performed on input package                                                                                                                       | None                                                                 |
+| `--pipeline`     | Specifies actions which should be performed on preprocessed text in NLP step                                                                                                       | clean cross_coref tfidf tokenize content_filtering batch svo spo ner |
+| `--output`       | Specifies directory, where results should be saved. Has to be empty                                                                                                                | results                                                              |
+| `--tfidf`        | Specifies how many words to pick from TF-IDF results for topic modeling                                                                                                            | 5                                                                    |
+| `--db_name`      | Name of the database to upload graph to                                                                                                                                            | None                                                                 |
 
 
-#### Adjust running options
 Other options can be set via environment variables:
 
-| Variable            | Description                                               | Default        |
-|---------------------|-----------------------------------------------------------|----------------|
-| MODEL               | Language model used for Natural Langauge Processing tasks | en_core_web_lg |
-
+| Variable            | Description                                                                                                                                                                                       | Default        |
+|---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------|
+| MODEL               | Language model used for Natural Langauge Processing tasks                                                                                                                                         | en_core_web_lg |
+| USE_CUDA            | If set to 1 system utilize CUDA platform during execution, otherwise CPU cores will handle calculations. Requires CUDA configuration, gives much better performance even on large language models | 0              |
+| IN_MEMORY_FILE_SIZE | Maximum file size that can be loaded into program memory in bytes. If file size is greater than resource limit then content is broken down into smaller pieces                                    | 1MB            |
+| STARDOG_ENDPOINT    | Stardog database endpoint URL                                                                                                                                                                     | None           |
+| STARDOG_USERNAME    | Stardog database username                                                                                                                                                                         | None           |
+| STARDOG_PASSWORD    | Stardog database password                                                                                                                                                                         | None           |
+ 
 
 ## Copyright
 Technical Documentation Analyzer (TDA) has a GNU license, as found in the [LICENSE](https://github.com/lukaszmichalskii/Samsung-KPZ/blob/master/LICENSE) file.
