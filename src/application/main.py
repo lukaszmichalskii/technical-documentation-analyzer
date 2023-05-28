@@ -9,7 +9,11 @@ import sys
 import traceback
 import typing
 
+import stardog
 from rdflib import Graph
+
+from src.config.config import Config
+from src.database.stardog_connection import StardogConnection
 from src.knowledge_graph.make_rdf_triples import convert_to_rdf, make_turtle_syntax
 from src.nlp.nlp_job_runner import NLPJobRunner
 from src.application import common, decompression, logs
@@ -60,7 +64,7 @@ Examples:
     TF-IDF analysis only 
     python skg_app.py --techdoc_path docs.pdf --pipeline term_frequencies_inverse_document_frequency
     
-More info: <confluence manual url>"""
+More info: https://github.com/lukaszmichalskii/Samsung-KPZ/blob/master/MANUAL.md"""
 
 
 def extracted_path(results_dir: pathlib.Path) -> pathlib.Path:
@@ -195,6 +199,22 @@ def run_app(
                 )
             nlp_analizer.reset()
 
+    def upload_to_database() -> None:
+        with StardogConnection(Config(), args.db_name) as conn:
+            conn.begin()
+            for file in files_in_dir(output.joinpath("graph")):
+                try:
+                    file = pathlib.Path(file)
+                    logger.info(f"Uploading {file.name} to {args.db_name} database...")
+                    conn.add(stardog.content.File(str(file)))
+                    logger.info(f"{file.name} file has been uploaded successfully.")
+                except Exception:
+                    logger.warning(
+                        f"Unable to upload {file.name} file. Details: {traceback.format_exc()}"
+                    )
+                    continue
+            conn.commit()
+
     if common.get_current_os() != "linux":
         logger.warning(
             f"You are using toolkit on {common.get_current_os()}. Some functionalities may not work correctly"
@@ -216,6 +236,8 @@ def run_app(
         logger.error(f"Missing required step: 'decompress'.")
         logger.info("App finished with exit code 1")
         return 1
+    if not args.db_name:
+        logger.warning(f"Missing required arg: 'db_name'.")
     if STEPS.DECOMPRESS in args.only:
         try:
             if (
@@ -245,6 +267,9 @@ def run_app(
             )
         logger.info("Information extraction...")
         information_extraction_step()
+    if STEPS.UPLOAD_GRAPH in args.only:
+        if args.db_name:
+            upload_to_database()
     logger.info("App finished with exit code 0")
     return 0
 
@@ -282,6 +307,7 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
     'decode'     - decode extracted files, cleanup text for NLP processing.
     'information_extraction' - natural language processing for information extraction.
     'make_graph' - create RDF based graph file.
+    'upload_graph' - upload graph file to Stardog database pointed by --db_name.
     """,
     )
     parser.add_argument(
@@ -320,6 +346,10 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
         "--visualize",
         action="store_true",
         help="save graph visualization from 'information_extraction' job",
+    )
+    parser.add_argument(
+        "--db_name",
+        help="name of the database to upload graph to",
     )
     parser.epilog = get_help_epilog()
     return run_app(parser.parse_args(argv[1:]), argv, logger, environment)
