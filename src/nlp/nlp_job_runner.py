@@ -65,10 +65,16 @@ class NLPJobRunner:
         pipeline=None,
         model="en_core_web_sm",
         compile_on: str = "CPU",
+        operating_system: str = "linux",
     ):
         self.logger = logger
         self.pipeline = NLP_PIPELINE_JOBS if pipeline is None else pipeline
-        self.pos_tagger = CoreNLPParser(url="http://0.0.0.0:9000", tagtype="pos")
+        url = (
+            "http://localhost:9000/"
+            if operating_system != "linux"
+            else "http://0.0.0.0:9000"
+        )
+        self.pos_tagger = CoreNLPParser(url=url, tagtype="pos")
         try:
             self.pos_tagger.parse("Validation phase")
         except Exception:
