@@ -176,7 +176,7 @@ class NLPJobRunner:
             self.logger.warn("Further processing will be performed on unfiltered data.")
         start = time.time()
         if PIPELINE.SVO in self.pipeline:
-            self.svo = svo(self.sentences, self.lang)
+            self.svo = svo(self.sentences, self.lang, self.ner)
             self.logger.info(
                 f"SVO triples extraction execution time: {time.time() - start:.2f}s"
             )
@@ -186,7 +186,7 @@ class NLPJobRunner:
             )
         start = time.time()
         if PIPELINE.SPO in self.pipeline:
-            self.spo = spo(self.sentences, self.pos_tagger)
+            self.spo = spo(self.sentences, self.pos_tagger, self.ner)
             self.logger.info(
                 f"SPO triples extraction execution time: {time.time() - start:.2f}s"
             )
@@ -194,10 +194,6 @@ class NLPJobRunner:
             self.logger.warn(
                 "SPO triples extraction not utilized in information extraction process."
             )
-        # if PIPELINE.NPN in self.pipeline:
-        #     self.logger.info(
-        #         "Extracting additional information is not implemented yet."
-        #     )
         start = time.time()
         if PIPELINE.NER in self.pipeline:
             self.logger.warn(
@@ -219,11 +215,23 @@ class NLPJobRunner:
 
         return self.spo, self.svo
 
+    def reset(self):
+        # docs file text
+        self.documentation = None
+
+        # pipeline variables
+        self.tfidf = list()
+        self.human_knowledge = list()
+        self.sentences = list()
+        self.filtered_content = list()
+        self.svo = set()
+        self.spo = set()
+
 
 if __name__ == "__main__":
     jr = NLPJobRunner(logs.setup_logger())
-    text = "Path planner use Motion estimation and SLAM for optimal trajectory path during Trackdrive event."
+    text = """Path planner is a component of control pipeline of THINK part of autonomous system"""
     spo_, svo_ = jr.execute(text)
     dummy_save(svo_, spo_, "graph.png")
-    for s in svo_:
+    for s in spo_:
         print(s)

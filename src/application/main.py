@@ -135,7 +135,7 @@ def run_app(
                 with open(nlp_dir.joinpath(f"{filename.stem}_spo.txt"), "w+") as fd:
                     for triple in spo:
                         fd.write(
-                            f"{triple.subj};{triple.pred};{triple.obj};{triple.subj_attrs};{triple.obj_attrs}\n"
+                            f"{triple.subj};{triple.pred};{triple.obj};{triple.subj_attrs};{triple.obj_attrs};{triple.subj_ner};{triple.obj_ner}\n"
                         )
             if svo:
                 with open(nlp_dir.joinpath(f"{filename.stem}_svo.txt"), "w+") as fd:
@@ -143,6 +143,7 @@ def run_app(
                         fd.write(
                             f"{triple.subj};{triple.verb};{triple.obj};{triple.subj_ner};{triple.obj_ner}\n"
                         )
+            nlp_analizer.reset()
 
     if common.get_current_os() != "linux":
         logger.warning(

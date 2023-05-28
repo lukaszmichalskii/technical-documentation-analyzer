@@ -29,12 +29,13 @@ RESOLVED = "System"
 """named entity linking
 """
 LIBRARY = ["LIBRARY"]
-ALGORITHM = ["ALGORITHM", "KALMAN FILTER", "YOLO", "SLAM"]
+ALGORITHM = ["ALGORITHM"]
 SENSOR = ["SENSOR"]
 SOFTWARE = ["SOFTWARE"]
 PROGRAMMING_LANGUAGE = ["PROGRAMMING LANGUAGE"]
 EXECUTION_UNIT = ["COMPUTING PLATFORM", "PROCESSING UNIT"]
 DATA_STRUCTURE = ["DATA STRUCTURE"]
+AS_MODULE = ["AUTONOMOUS VEHICLE MODULE"]
 
 
 def content_filtering(sentences: List[str], patterns: List[str]):
@@ -81,23 +82,29 @@ def adj_noun(text: str, index: int, model: Language) -> str:
     return phrase
 
 
-def svo(text: List[str], model: Language) -> Set[SVO]:
+def svo(text: List[str], model: Language, ner: Language) -> Set[SVO]:
     svo_ls = list()
     for sent in text:
-        svo_ls.extend(svo_extract(sent, model))
+        svo_ls.extend(svo_extract(sent, model, ner))
     return set(svo_ls)
 
 
-def svo_extract(text: str, model: Language) -> List[SVO]:
+def svo_extract(text: str, model: Language, ner: Language) -> List[SVO]:
     corpus = model(text)
     svo_ls = []
+    entities = None
     for token in corpus:
+        if ner:
+            entities = ner(text)
         if token.pos_ == VERB:  # assume root node
             phrase = ""
             for sub_tok in token.lefts:
                 if sub_tok.dep_ in SUBJECT and sub_tok.pos_ in NOUN_PREP:
                     adj = adj_noun(text, sub_tok.i, model)
-                    phrase += adj + " " + sub_tok.text
+                    info = (
+                        classify(sub_tok.text, entities) if entities else sub_tok.text
+                    )
+                    phrase += adj + " " + info
                     phrase += " " + token.lemma_
                     # check for noun or pronoun direct objects
                     for sub_tok in token.rights:
@@ -105,10 +112,21 @@ def svo_extract(text: str, model: Language) -> List[SVO]:
                             adj = adj_noun(text, sub_tok.i, model)
                             phrase += adj + " " + sub_tok.text
                             svo_ls.append(phrase.strip())
-    return svo_triples(svo_ls, model)
+    return svo_triples(svo_ls, model, ner)
 
 
-def svo_triples(svo_ls: List[str], model: Language) -> List[SVO]:
+def classify(desc: str, entities) -> str:
+    if not entities:
+        return desc
+    info = desc
+    for ent in entities.ents:
+        if desc in ent.text:
+            info = ent.text
+            return info
+    return info
+
+
+def svo_triples(svo_ls: List[str], model: Language, ner: Language) -> List[SVO]:
     triples = []
     for svo in svo_ls:
         svo_obj = SVO()
@@ -143,24 +161,34 @@ def svo_triples(svo_ls: List[str], model: Language) -> List[SVO]:
                         )
                     else:
                         svo_obj.obj = " ".join([svo_obj.obj, token.text])
+        if ner:
+            for ent in ner(svo).ents:
+                if svo_obj.subj == ent.text:
+                    svo_obj.subj_ner = ent.label_
+                if svo_obj.obj == ent.text:
+                    svo_obj.obj_ner = ent.label_
         if svo_obj.invalid():
             continue
         if svo_obj in triples:
             continue
+        if svo_obj.subj == RESOLVED:
+            svo_obj.subj_ner = RESOLVED.upper()
+        if svo_obj.obj == RESOLVED:
+            svo_obj.obj = RESOLVED.upper()
         triples.append(svo_obj)
     return triples
 
 
-def spo(text: List[str], tagger: CoreNLPParser) -> Set[SPO]:
+def spo(text: List[str], tagger: CoreNLPParser, ner: Language) -> Set[SPO]:
     spo_ls = list()
     for sent in text:
-        triplet = spo_extract(sent, tagger)
+        triplet = spo_extract(sent, tagger, ner)
         if triplet and triplet not in spo_ls:
             spo_ls.append(triplet)
     return set(spo_ls)
 
 
-def spo_extract(text: str, tagger: CoreNLPParser) -> Optional[SPO]:
+def spo_extract(text: str, tagger: CoreNLPParser, ner: Language) -> Optional[SPO]:
     (dependency_tree,) = ParentedTree.convert(
         list(tagger.parse(nltk.tokenize.word_tokenize(text)))[0]
     )
@@ -178,6 +206,12 @@ def spo_extract(text: str, tagger: CoreNLPParser) -> Optional[SPO]:
             triplet.obj_attrs = objects.attributes
         if triplet.subj == triplet.obj:
             return None
+        if ner:
+            for ent in ner(text).ents:
+                if triplet.subj in ent.text:
+                    triplet.subj_ner = ent.label_
+                if triplet.obj in ent.text:
+                    triplet.obj_ner = ent.label_
         return triplet
     return None
 

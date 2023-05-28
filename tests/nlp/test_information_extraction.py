@@ -53,14 +53,14 @@ class TestInformationExtraction(unittest.TestCase):
         sentence = "System use TensorRT library provided by NVIDIA"
         self.assertEqual(
             SVO(subj="System", verb="use", obj="TensorRT library"),
-            svo_extract(sentence, MODEL)[0],
+            svo_extract(sentence, MODEL, NER)[0],
         )
 
     def test_svo_extract_simple_expressions(self):
         sentence = "System use TensorRT"
         self.assertEqual(
             SVO(subj="System", verb="use", obj="TensorRT"),
-            svo_extract(sentence, MODEL)[0],
+            svo_extract(sentence, MODEL, NER)[0],
         )
 
     def test_svo_filter_out_duplicates(self):
@@ -70,7 +70,7 @@ class TestInformationExtraction(unittest.TestCase):
             "System use TensorRT library provided by NVIDIA",
             "We use TensorRT library provided by NVIDIA",
         ]
-        arr_ = svo(sentences, MODEL)
+        arr_ = svo(sentences, MODEL, NER)
         self.assertEqual(
             {
                 SVO(subj="System", verb="use", obj="TensorRT"),
@@ -86,7 +86,7 @@ class TestInformationExtraction(unittest.TestCase):
             "by NVIDIA",
             "We use TensorRT library provided by NVIDIA",
         ]
-        arr_ = svo(sentences, MODEL)
+        arr_ = svo(sentences, MODEL, NER)
         self.assertEqual(
             {
                 SVO(subj="System", verb="use", obj="TensorRT"),
@@ -100,7 +100,7 @@ class TestInformationExtraction(unittest.TestCase):
         triple2 = "we create landmark map"
         triple3 = "they use FSOCO"
 
-        resolved = svo_triples([triple1, triple2, triple3], MODEL)
+        resolved = svo_triples([triple1, triple2, triple3], MODEL, NER)
         self.assertEqual(
             [
                 SVO(subj="system", obj="create", verb="map"),
@@ -113,7 +113,7 @@ class TestInformationExtraction(unittest.TestCase):
     def test_svo_triple_resolve_noun_phrases(self):
         triple_multi_obj = "FastSLAM create landmark map"
         triple_multi_subj = "Simultaneous localization create occupancy grid"
-        resolved = svo_triples([triple_multi_obj, triple_multi_subj], MODEL)
+        resolved = svo_triples([triple_multi_obj, triple_multi_subj], MODEL, NER)
         self.assertEqual(
             [
                 SVO(subj="FastSLAM", obj="landmark map", verb="create"),
@@ -129,15 +129,16 @@ class TestInformationExtraction(unittest.TestCase):
     def test_svo_triple_remove_invalid_relations(self):
         corrupted = "one associate "
         correct = "FastSLAM create landmark map"
-        results = svo_triples([corrupted, correct], MODEL)
+        results = svo_triples([corrupted, correct], MODEL, NER)
         self.assertEqual(
             [SVO(subj="FastSLAM", obj="landmark map", verb="create")], results
         )
 
-    @unittest.skip(
-        "Requires a proprietary NER model, deactivated until project becomes open-source."
-    )
     def test_ner_detect_algorithm(self):
+        if not NER:
+            self.skipTest(
+                "Requires a proprietary NER model, deactivated until project becomes open-source."
+            )
         textSLAM = "AS use FastSLAM for localisation and mapping."
         textTriangulation = "Path planner utilize Delaunay triangulation"
         resultsSLAM = named_entity_recognition(textSLAM, NER)
@@ -150,7 +151,14 @@ class TestInformationExtraction(unittest.TestCase):
                     obj="FastSLAM",
                     subj_ner="SYSTEM",
                     obj_ner="ALGORITHM",
-                )
+                ),
+                SVO(
+                    subj="System",
+                    verb="utilize",
+                    obj="localisation",
+                    subj_ner="SYSTEM",
+                    obj_ner="SENSOR",
+                ),
             },
             resultsSLAM,
         )
@@ -167,10 +175,11 @@ class TestInformationExtraction(unittest.TestCase):
             results_triangulation,
         )
 
-    @unittest.skip(
-        "Requires a proprietary NER model, deactivated until project becomes open-source."
-    )
     def test_ner_detect_libraries(self):
+        if not NER:
+            self.skipTest(
+                "Requires a proprietary NER model, deactivated until project becomes open-source."
+            )
         text = "Module dependencies: TensorRT"
         results_libraries = named_entity_recognition(text, NER)
         self.assertEqual(
@@ -186,10 +195,11 @@ class TestInformationExtraction(unittest.TestCase):
             results_libraries,
         )
 
-    @unittest.skip(
-        "Requires a proprietary NER model, deactivated until project becomes open-source."
-    )
     def test_ner_detect_computing_platforms(self):
+        if not NER:
+            self.skipTest(
+                "Requires a proprietary NER model, deactivated until project becomes open-source."
+            )
         textgpu = "Network is executed on GPU"
         textcpu = "Network is executed on CPU"
         results_gpu = named_entity_recognition(textgpu, NER)

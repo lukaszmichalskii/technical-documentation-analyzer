@@ -17,6 +17,8 @@ class SVO:
     def invalid(self):
         if self.subj == "" or self.obj == "":
             return True
+        if self.subj == self.obj and self.subj_ner == self.obj_ner:
+            return True
         return False
 
     def __eq__(self, other: SVO):
@@ -41,9 +43,11 @@ class SPO:
 
     subj: str = ""
     subj_attrs: str | List[str] = ""
+    subj_ner: str = ""
     pred: str = ""
     obj: str = ""
     obj_attrs: str | List[str] = ""
+    obj_ner: str = ""
 
     def __eq__(self, other: SPO):
         if (
