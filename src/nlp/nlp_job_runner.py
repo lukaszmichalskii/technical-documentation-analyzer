@@ -1,6 +1,6 @@
 import pathlib
 import time
-from typing import Tuple, Set
+from typing import Tuple, Set, List
 
 import networkx as nx
 import nltk.tokenize
@@ -58,7 +58,14 @@ def dummy_save(svo_, spo_, file):
 
 
 class NLPJobRunner:
-    def __init__(self, logger, pipeline=None, model="en_core_web_sm"):
+    def __init__(
+        self,
+        logger,
+        tfidf_param: int = 5,
+        pipeline=None,
+        model="en_core_web_sm",
+        compile_on: str = "CPU",
+    ):
         self.logger = logger
         self.pipeline = NLP_PIPELINE_JOBS if pipeline is None else pipeline
         self.pos_tagger = CoreNLPParser(url="http://0.0.0.0:9000", tagtype="pos")
@@ -71,7 +78,7 @@ class NLPJobRunner:
                     "CoreNLP engine is not working, skipping SPO extraction step."
                 )
         self.logger.info("Compiling NLP pipeline toolkit...")
-        self.lang, self.ner = compile_nlp(model, self.pipeline)
+        self.lang, self.ner = compile_nlp(model, self.pipeline, compile_on)
         self.logger.info(f"Toolkit loaded successfully: model {model}")
 
         # docs file text
@@ -86,11 +93,11 @@ class NLPJobRunner:
         self.spo = set()
 
         # parameters
-        self.tfidf_top = 5
+        self.tfidf_top = tfidf_param
 
     def execute(
         self, text: str, save: pathlib.Path = None
-    ) -> Tuple[Set[SPO], Set[SVO]]:
+    ) -> Tuple[List[Tuple[str, int]], Set[SPO], Set[SVO]]:
         self.documentation = text
         start = time.time()
         if PIPELINE.CLEAN in self.pipeline:
@@ -103,10 +110,14 @@ class NLPJobRunner:
             self.logger.warn("Skipping text preprocessing job.")
         start = time.time()
         if PIPELINE.CROSS_COREF in self.pipeline:
-            self.documentation = cross_coref(self.documentation, self.lang)
-            self.logger.info(
-                f"Coreference resolution execution time: {time.time() - start:.2f}s"
-            )
+            try:
+                self.documentation = cross_coref(self.documentation, self.lang)
+                self.logger.info(
+                    f"Coreference resolution execution time: {time.time() - start:.2f}s"
+                )
+            except RuntimeError as e:
+                self.logger.error(str(e))
+                return list(), set(), set()
         else:
             self.logger.warn(
                 "Skipping coreference resolution, linked entities might be corrupted."
@@ -133,8 +144,10 @@ class NLPJobRunner:
                 f"Sentence tokenization execution time: {time.time() - start:.2f}s"
             )
         else:
-            self.logger.error(f"Invalid pipeline setup, {PIPELINE.TOKENIZE} not found.")
-            return set(), set()
+            self.logger.error(
+                f"Invalid pipeline setup, {PIPELINE.TOKENIZE} not found, required for further execution."
+            )
+            self.pipeline = []
         start = time.time()
         if PIPELINE.TOPIC_MODELING in self.pipeline and self.human_knowledge:
             pattern = [subject for subject in self.human_knowledge]
@@ -210,10 +223,10 @@ class NLPJobRunner:
         else:
             self.logger.warn("Named Entity Recognition analysis was not executed.")
 
-        if save:
+        if save and (self.svo or self.spo):
             dummy_save(self.svo, self.spo, save)
 
-        return self.spo, self.svo
+        return self.tfidf, self.spo, self.svo
 
     def reset(self):
         # docs file text
@@ -231,7 +244,7 @@ class NLPJobRunner:
 if __name__ == "__main__":
     jr = NLPJobRunner(logs.setup_logger())
     text = """Path planner is a component of control pipeline of THINK part of autonomous system"""
-    spo_, svo_ = jr.execute(text)
+    tf, spo_, svo_ = jr.execute(text)
     dummy_save(svo_, spo_, "graph.png")
     for s in spo_:
         print(s)

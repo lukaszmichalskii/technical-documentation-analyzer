@@ -44,6 +44,19 @@ PIPELINE = enum(
     NER="named_entity_recognition",  # named entity recognition, classification and description generation
 )
 
+PIPELINE_CHOICES = [
+    PIPELINE.CLEAN,
+    PIPELINE.CROSS_COREF,
+    PIPELINE.TFIDF,
+    PIPELINE.TOKENIZE,
+    PIPELINE.TOPIC_MODELING,
+    PIPELINE.CONTENT_FILTERING,
+    PIPELINE.BATCH,
+    PIPELINE.SVO,
+    PIPELINE.SPO,
+    PIPELINE.NER,
+]
+
 # default pipeline steps
 NLP_PIPELINE_JOBS = [
     PIPELINE.CLEAN,
@@ -73,6 +86,12 @@ def is_linux_os() -> bool:
     return platform().find("Linux") != -1
 
 
+def computation_platform(code: int) -> str:
+    if code == 1:
+        return "CUDA"
+    return "CPU"
+
+
 class Environment:
     """
     Class for storing user specific configuration overwritten using environmental variables
@@ -81,6 +100,7 @@ class Environment:
     def __init__(self, env):
         self.in_memory_file_limit = int(env.get("IN_MEMORY_FILE_SIZE", 1024 * 1024))
         self.spacy_model = env.get("MODEL", "en_core_web_lg")
+        self.processing_unit = computation_platform(int(env.get("USE_CUDA", 0)))
         self.os = get_current_os()
 
     @staticmethod
@@ -88,6 +108,8 @@ class Environment:
         return Environment(env)
 
     def to_info_string(self):
-        return ("os: {} " + "in_memory_file_limit: {} " + "model: {}").format(
-            self.os, self.in_memory_file_limit, self.spacy_model
+        return (
+            "os: {}, " + "in_memory_file_limit: {}, " + "model: {}, " + "running on: {}"
+        ).format(
+            self.os, self.in_memory_file_limit, self.spacy_model, self.processing_unit
         )

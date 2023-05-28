@@ -19,6 +19,7 @@ from src.application.common import (
     SKIP_DECODING,
     RESULTS_FORMAT,
     PLUGIN_DEFAULT_PATH,
+    PIPELINE_CHOICES,
 )
 from src.application.decompression import DecompressionError, NotSupportedArchiveFormat
 from src.application.text_processor import TextProcessor
@@ -29,6 +30,8 @@ def get_help_epilog():
     return """
 Exit codes:
     0 - successful execution
+    1 - known error connected with application requirements.
+    3 - plugin failed to decode provided files.
     4 - no information was extracted during analysis, check your NLP pipeline setup.
     any other code indicated unrecoverable error - output might be invalid
     
@@ -36,13 +39,23 @@ Environment variables:
     IN_MEMORY_FILE_SIZE : Maximum file size that can be loaded into program memory in bytes.
                           If file size is greater than resource limit then content is broken down into smaller pieces.
                           Default: 1MB
+    MODEL               : Language model used for NLP pipeline. For better accuracy 'en_core_web_lg'.
+                          For performance 'en_core_web_sm'
+                          Default: en_core_web_lg
+    USE_CUDA            : If set to 1 system utilize CUDA platform during execution, otherwise CPU cores 
+                          will handle calculations. Requires CUDA configuration, gives much better performance even on
+                          large language models.
+                          Default: 0
+                          
 Examples:
     Autodetect what to do
     python skg_app.py --techdoc_path input_path --output results_dir
     Decompress only files
     python skg_app.py --techdoc_path example.zip --output results_dir --only decompress
-    Information extraction
+    Information extraction only, abandon graph serialization
     python skg_app.py --techdoc_path example.zip --only decompress decode information_extraction
+    TF-IDF analysis only 
+    python skg_app.py --techdoc_path docs.pdf --pipeline term_frequencies_inverse_document_frequency
     
 More info: <confluence manual url>"""
 
@@ -111,7 +124,11 @@ def run_app(
 
     def information_extraction_step():
         nlp_analizer = NLPJobRunner(
-            logger, pipeline=NLP_PIPELINE_JOBS, model=environment.spacy_model
+            logger,
+            pipeline=args.pipeline,
+            model=environment.spacy_model,
+            tfidf_param=args.tfidf,
+            compile_on=environment.processing_unit,
         )
         for file in files_in_dir(decoded_path(output)):
             with open(file) as fd:
@@ -121,24 +138,28 @@ def run_app(
             logger.info(
                 f"NLP module started. Processing {filename.name} documentation."
             )
-            spo, svo = nlp_analizer.execute(
+            tfidf, spo, svo = nlp_analizer.execute(
                 text,
                 save=nlp_dir.joinpath(f"{filename.stem}.png")
                 if args.visualize
                 else None,
             )
-            if not spo and not svo:
+            if not tfidf and not spo and not svo:
                 logger.error("No information was extracted.")
                 logger.info("App finished with exit code 4")
                 return sys.exit(4)
+            if tfidf:
+                with open(nlp_dir.joinpath(f"{filename.stem}_tfidf.txt"), "w") as fd:
+                    for data in tfidf:
+                        fd.write(f"{data[0]}: {data[1]}\n")
             if spo:
-                with open(nlp_dir.joinpath(f"{filename.stem}_spo.txt"), "w+") as fd:
+                with open(nlp_dir.joinpath(f"{filename.stem}_spo.txt"), "w") as fd:
                     for triple in spo:
                         fd.write(
                             f"{triple.subj};{triple.pred};{triple.obj};{triple.subj_attrs};{triple.obj_attrs};{triple.subj_ner};{triple.obj_ner}\n"
                         )
             if svo:
-                with open(nlp_dir.joinpath(f"{filename.stem}_svo.txt"), "w+") as fd:
+                with open(nlp_dir.joinpath(f"{filename.stem}_svo.txt"), "w") as fd:
                     for triple in svo:
                         fd.write(
                             f"{triple.subj};{triple.verb};{triple.obj};{triple.subj_ner};{triple.obj_ner}\n"
@@ -189,6 +210,10 @@ def run_app(
             logger.error("Plugin failed to decode provided files, nothing to analyze.")
             logger.info("App finished with exit code 3")
             return 3
+        if args.visualize:
+            logger.warning(
+                "Deprecation: 'visualize' argument will be removed, use visualization utility in Stardog."
+            )
         logger.info("Information extraction...")
         information_extraction_step()
     logger.info("App finished with exit code 0")
@@ -201,7 +226,7 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
     if environment is None:
         environment = common.Environment.from_env(os.environ)
     parser = argparse.ArgumentParser(
-        description="Automatic Semantic Knowledge Graph (ASKG) - automatically update knowledge graph from technical documentation content",
+        description="Technical Documentation Analyzer (TDA) - automatically create knowledge graph from technical documentation content",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
@@ -230,12 +255,36 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
     """,
     )
     parser.add_argument(
+        "--pipeline",
+        nargs="+",
+        choices=PIPELINE_CHOICES,
+        default=NLP_PIPELINE_JOBS,
+        help="""specifies actions which should be performed on preprocessed text in NLP step, be default whole pipeline is executed:
+    "clean" - text pre-processing
+    "crosslingual_coreference" - AllenNLP CoReference resolution for entity linking
+    "term_frequencies_inverse_document_frequency" - term frequencies inverse document frequency analysis
+    "tokenize" - sentence tokenize
+    "topic_modeling" - optional data given human knowledge about topic by --human-knowledge (user dependent).
+    "content_filtering" - content filtering based on TFIDF step (and optional TOPIC_MODELING data)
+    "batch" - obtain batch from document by filter out sentence with length not in defined threshold
+    "subject_verb_object" - subject-verb-object triples extraction
+    "subject_predicate_object" - subject-predicate-object triples extraction
+    "named_entity_recognition" - named entity recognition, classification and description generation
+    """,
+    )
+    parser.add_argument(
         "-o",
         "--output",
         type=str,
         metavar="output_folder",
         default="results",
         help="specifies directory, where results should be saved. Has to be empty",
+    )
+    parser.add_argument(
+        "--tfidf",
+        type=int,
+        default=5,
+        help="specifies how many words to pick from TF-IDF results for topic modeling",
     )
     parser.add_argument(
         "--visualize",

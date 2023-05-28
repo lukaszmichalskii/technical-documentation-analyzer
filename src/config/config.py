@@ -3,6 +3,8 @@ from urllib3.util import parse_url
 
 
 class Config:
+    """security issue, better way to handle user credentials needed."""
+
     _instance = None
 
     def __new__(cls):
