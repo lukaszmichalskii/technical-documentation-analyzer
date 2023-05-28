@@ -41,7 +41,6 @@ PIPELINE = enum(
     BATCH="batch",  # obtain batch from document by filter out sentence with length not in defined threshold
     SVO="subject_verb_object",  # subject-verb-object triples extraction
     SPO="subject_predicate_object",  # subject-predicate-object triples extraction
-    NPN="noun_preposition_noun",  # noun-preposition-noun n-grams extraction
     NER="named_entity_recognition",  # named entity recognition, classification and description generation
 )
 
@@ -55,7 +54,6 @@ NLP_PIPELINE_JOBS = [
     PIPELINE.BATCH,
     PIPELINE.SVO,
     PIPELINE.SPO,
-    PIPELINE.NPN,
     PIPELINE.NER,
 ]
 
