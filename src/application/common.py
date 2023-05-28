@@ -16,6 +16,7 @@ STEPS = enum(
     DECODE="decode",
     INFORMATION_EXTRACTION="information_extraction",
     MAKE_GRAPH="make_graph",
+    UPLOAD_GRAPH="upload_graph",
 )
 
 STEPS_CHOICES = [
@@ -23,12 +24,14 @@ STEPS_CHOICES = [
     STEPS.DECODE,
     STEPS.INFORMATION_EXTRACTION,
     STEPS.MAKE_GRAPH,
+    STEPS.UPLOAD_GRAPH,
 ]
 STANDARD_STEPS = [
     STEPS.DECOMPRESS,
     STEPS.DECODE,
     STEPS.INFORMATION_EXTRACTION,
     STEPS.MAKE_GRAPH,
+    STEPS.UPLOAD_GRAPH,
 ]
 
 SUPPORTED_ARCHIVES = {".zip", ".tar.xz", ".xz"}
