@@ -9,6 +9,8 @@ import sys
 import traceback
 import typing
 
+from rdflib import Graph
+from src.knowledge_graph.make_rdf_triples import convert_to_rdf, make_turtle_syntax
 from src.nlp.nlp_job_runner import NLPJobRunner
 from src.application import common, decompression, logs
 from src.application.common import (
@@ -20,6 +22,7 @@ from src.application.common import (
     RESULTS_FORMAT,
     PLUGIN_DEFAULT_PATH,
     PIPELINE_CHOICES,
+    GRAPH_FORMAT,
 )
 from src.application.decompression import DecompressionError, NotSupportedArchiveFormat
 from src.application.plugin_executor import execute_plugin
@@ -79,6 +82,24 @@ def nlp_path(results_dir: pathlib.Path, subdir: str | pathlib.Path) -> pathlib.P
     if not info.exists():
         os.makedirs(info)
     return info
+
+
+def graph_path(results_dir: pathlib.Path, subdir: str | pathlib.Path) -> pathlib.Path:
+    graph = results_dir.joinpath("graph").joinpath(subdir)
+    if not graph.exists():
+        os.makedirs(graph)
+    return graph
+
+
+def make_graph_step(svo, spo):
+    triples = list()
+    triples.extend(svo)
+    triples.extend(spo)
+    rdf_triples = convert_to_rdf(triples)
+    turtle = make_turtle_syntax(rdf_triples)
+    graph = Graph()
+    graph.parse(data=turtle, format="turtle")
+    return graph
 
 
 def run_app(
@@ -164,6 +185,14 @@ def run_app(
                         fd.write(
                             f"{triple.subj};{triple.verb};{triple.obj};{triple.subj_ner};{triple.obj_ner}\n"
                         )
+            if STEPS.MAKE_GRAPH in args.only:
+                logger.info("Preparing RDF triples...")
+                graph_dir = graph_path(output, subdir=filename.stem)
+                graph = make_graph_step(svo, spo)
+                graph.serialize(
+                    graph_dir.joinpath(f"{filename.stem}{GRAPH_FORMAT}"),
+                    format="turtle",
+                )
             nlp_analizer.reset()
 
     if common.get_current_os() != "linux":
@@ -252,6 +281,7 @@ def main(argv: typing.List[str], logger=None, environment=None) -> int:
     'decompress' - decompress files from archive pointed by --techdoc_path to the directory pointed by --output
     'decode'     - decode extracted files, cleanup text for NLP processing.
     'information_extraction' - natural language processing for information extraction.
+    'make_graph' - create RDF based graph file.
     """,
     )
     parser.add_argument(

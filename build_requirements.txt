@@ -8,5 +8,6 @@ numpy~=1.24.3
 nltk~=3.8.1
 scipy~=1.10.1
 networkx~=3.1
-pandas
-matplotlib
+pandas~=2.0.1
+matplotlib~=3.7.1
+rdflib~=6.3.2
