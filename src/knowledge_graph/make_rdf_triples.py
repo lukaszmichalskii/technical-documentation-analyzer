@@ -34,15 +34,15 @@ def convert_to_rdf(triple_list):
 
             subject_ner = triple.subj_ner
             if type(subject_ner) is list:
-                for sub in subject_ner:
-                    sub.replace(" ", "_")
+                for i in range(len(subject_ner)):
+                    subject_ner[i] = subject_ner[i].replace(" ", "_")
             else:
                 subject_ner = subject_ner.replace(" ", "_")
 
             object_ner = triple.obj_ner
             if type(object_ner) is list:
-                for ob in object_ner:
-                    ob.replace(" ", "_")
+                for i in range(len(object_ner)):
+                    object_ner[i] = object_ner[i].replace(" ", "_")
             else:
                 object_ner = object_ner.replace(" ", "_")
         else:
@@ -53,15 +53,15 @@ def convert_to_rdf(triple_list):
 
             subject_ner = triple.subj_ner
             if type(subject_ner) is list:
-                for sub in subject_ner:
-                    sub.replace(" ", "_")
+                for i in range(len(subject_ner)):
+                    subject_ner[i] = subject_ner[i].replace(" ", "_")
             else:
                 subject_ner = subject_ner.replace(" ", "_")
 
             object_ner = triple.obj_ner
             if type(object_ner) is list:
-                for ob in object_ner:
-                    ob.replace(" ", "_")
+                for i in range(len(object_ner)):
+                    object_ner[i] = object_ner[i].replace(" ", "_")
             else:
                 object_ner = object_ner.replace(" ", "_")
 
