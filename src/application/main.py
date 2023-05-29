@@ -199,7 +199,11 @@ def run_app(
                         format="turtle",
                     )
                 except Exception as e:
-                    logger.error("Failed to generate RDF graph representation. Details: {}".format(str(e)))
+                    logger.error(
+                        "Failed to generate RDF graph representation. Details: {}".format(
+                            str(e)
+                        )
+                    )
             nlp_analizer.reset()
 
     def upload_to_database() -> None:
