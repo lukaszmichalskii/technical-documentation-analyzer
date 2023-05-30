@@ -11,3 +11,7 @@ def remove_unicode(text: str) -> str:
         " ",
         text,
     )
+
+
+def remove_quotes_and_apostrophes(text: str) -> str:
+    return re.sub(r'[\'"]', "", text)
