@@ -191,12 +191,19 @@ def run_app(
                         )
             if STEPS.MAKE_GRAPH in args.only:
                 logger.info("Preparing RDF triples...")
-                graph_dir = graph_path(output, subdir=filename.stem)
-                graph = make_graph_step(svo, spo)
-                graph.serialize(
-                    graph_dir.joinpath(f"{filename.stem}{GRAPH_FORMAT}"),
-                    format="turtle",
-                )
+                try:
+                    graph_dir = graph_path(output, subdir=filename.stem)
+                    graph = make_graph_step(svo, spo)
+                    graph.serialize(
+                        graph_dir.joinpath(f"{filename.stem}{GRAPH_FORMAT}"),
+                        format="turtle",
+                    )
+                except Exception as e:
+                    logger.error(
+                        "Failed to generate RDF graph representation. Details: {}".format(
+                            str(e)
+                        )
+                    )
             nlp_analizer.reset()
 
     def upload_to_database() -> None:
