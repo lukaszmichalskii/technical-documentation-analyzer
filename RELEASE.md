@@ -8,9 +8,9 @@
 
 ### Release Compatibility Matrix
 
-Following is the Release Compatibility Matrix for PyTorch releases:
+Following is the Release Compatibility Matrix for TDA releases:
 
-| TDA version | Python        | Java | Description |
-|-------------|---------------|------|-------------|
-| 0.0         | \>=3.8, <3.11 | 17   | Prototype   |
+| TDA version | Python        | Java | Description                  |
+|-------------|---------------|------|------------------------------|
+| 0.1.0-alpha | \>=3.8, <3.11 | 17   | TDA for the validation phase |
 

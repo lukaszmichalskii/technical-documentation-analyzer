@@ -42,7 +42,7 @@ def convert_txt_to_svo(file_path):
         svo_list: list of svo triples
     """
 
-    file = open(file_path, "r")
+    file = open(file_path, "r", encoding="utf-8")
     svo_list = []
     for line in file:
         line = line.strip()
@@ -69,7 +69,7 @@ def convert_txt_to_spo(file_path):
         spo_list: list of spo triples
     """
 
-    file = open(file_path, "r")
+    file = open(file_path, "r", encoding="utf-8")
     spo_list = []
     for line in file:
         line = line.strip()
