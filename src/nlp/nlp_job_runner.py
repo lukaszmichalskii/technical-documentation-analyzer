@@ -19,7 +19,11 @@ from src.nlp.information_extraction import (
     spo,
     named_entity_recognition,
 )
-from src.nlp.pre_processing import remove_whitespace_characters, remove_unicode
+from src.nlp.pre_processing import (
+    remove_whitespace_characters,
+    remove_unicode,
+    remove_quotes_and_apostrophes,
+)
 from src.nlp.tfidf import tfidf
 from src.nlp.triples import SVO, SPO
 
@@ -118,6 +122,7 @@ class NLPJobRunner:
         if PIPELINE.CROSS_COREF in self.pipeline:
             try:
                 self.documentation = cross_coref(self.documentation, self.lang)
+                self.documentation = remove_quotes_and_apostrophes(self.documentation)
                 self.logger.info(
                     f"Coreference resolution execution time: {time.time() - start:.2f}s"
                 )
