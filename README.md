@@ -13,7 +13,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <a href="https://github.com/lukaszmichalskii/Samsung-KPZ">
+  <a href="https://github.com/lukaszmichalskii/technical-documentation-analyzer">
     <img src="docs/logo.png" alt="Logo" width="200" height="200">
   </a>
 
@@ -22,10 +22,10 @@
   <p align="center">
     Automatic construction of a semantic knowledge-graph based on content of technical documentation
     <br />
-    <a href="https://github.com/lukaszmichalskii/Samsung-KPZ/blob/master/MANUAL.md"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/lukaszmichalskii/technical-documentation-analyzer/blob/master/README.md"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/lukaszmichalskii/Samsung-KPZ">View Demo</a>
+    <a href="https://github.com/lukaszmichalskii/technical-documentation-analyzer">View Demo</a>
     ·
     <a href="https://samsung-kpz.atlassian.net/jira/software/c/projects/SAM/boards/1">Report Bug</a>
     ·
@@ -39,9 +39,10 @@
 ## Table of Contents
 - [More About TDA](#more-about-tda)
   - [Technical Documentation Analyzer](#technical-documentation-analyzer)
-  - [Deep Convolutional Neural Network](#deep-convolutional-neural-network)
+  - [Deep Neural Network](#deep-neural-network)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
+  - [Latest version](#latest-version)
   - [Get the TDA source](#get-the-tda-source)
   - [Install Dependencies](#install-dependencies)
     - [Setup CoreNLP dependency](#setup-corenlp-dependency)
@@ -64,21 +65,21 @@ languages, starting from the description of the requirements model in a natural 
 description of the architecture model, to the description of the system in the programming language.
 The aim of the project is to automatically create a description of the system using the OWL/RDF
 language based on the available technical documentation, using NLP technologies offering Named
-Entities Recognition and Relations Detection mechanisms. The result of the project will be an ontology
+Entities Recognition and Relations Detection mechanisms. The result of the project is an ontology
 for describing software solutions from a functional and non-functional perspective, and an automatic
 mechanism for creating a Semantic Knowledge Graph based on it, describing the system based on the
 knowledge contained in the technical documentation.
 
 
-### Deep Convolutional Neural Network
+### Deep Neural Network
 
 System was designed to handle technical documentation content related with autonomous car's industry 
-therefore own Named Entities Recognition CNN was developed. Model required compatibility with [spacy](https://spacy.io/) library that is why we
+therefore own Named Entities Recognition DNN was developed. Model required compatibility with [spacy](https://spacy.io/) library that is why we
 used spaCy as training interface. Training procedure was made on the dataset related to Formula Student series, and
 documentations publicly available on the Internet, annotated using [NER Annotator for SpaCy](https://github.com/tecoholic/ner-annotator) tool.
 
 NER model are available for download here: [ner_latest.zip](https://drive.google.com/file/d/1hWuZuLUB3ZQTjpHtGNaGeznxM-X4fWJ4/view?usp=sharing)
-
+and is provided in version release files.
 
 ## Installation
 
@@ -102,10 +103,14 @@ Note: You could refer to the [cuDNN Support Matrix](https://docs.nvidia.com/deep
 If you want to disable CUDA support, export the environment variable `USE_CUDA=0`.
 Other potentially useful environment variables may be found in `main.py`.
 
-### Get the TDA source
+### Latest version
+Latest tag for TDA is `0.1.0-alpha` released for validation phase. Go to releases section, download archive and follow 
+below instructions, alternatively get system from source. For more information about releases check [RELEASE.md](https://github.com/lukaszmichalskii/technical-documentation-analyzer/blob/master/RELEASE.md) file
+
+### Get from TDA source
 ```bash
-git clone https://github.com/lukaszmichalskii/Samsung-KPZ.git
-cd Samsung-KPZ
+git clone https://github.com/lukaszmichalskii/technical-documentation-analyzer.git
+cd technical-documentation-analyzer
 # **** OPTIONAL: virtual environment for Python setup ****
 python3 -m virtualenv venv
 source venv/bin/activate
@@ -205,15 +210,15 @@ python3 src/skg_app.py --techdoc_path <path_to_documentation> --plugin <path_to_
 
 Arguments for adjusting running options:
 
-| Argument         | Description                                                                                                                                                                        | Default                                                              |
-|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|
-| `--techdoc_path` | Path to the compressed documentation file/s (.zip and .tar.xz compressed only), directory with already decompressed files or single file (supported document formats: .pdf, .docx) | None                                                                 |
-| `--plugin`       | Path to the text parsing plugin                                                                                                                                                    | src/plugins/default_plugin.py                                        |
-| `--only`         | Specifies actions which should be performed on input package                                                                                                                       | None                                                                 |
-| `--pipeline`     | Specifies actions which should be performed on preprocessed text in NLP step                                                                                                       | clean cross_coref tfidf tokenize content_filtering batch svo spo ner |
-| `--output`       | Specifies directory, where results should be saved. Has to be empty                                                                                                                | results                                                              |
-| `--tfidf`        | Specifies how many words to pick from TF-IDF results for topic modeling                                                                                                            | 5                                                                    |
-| `--db_name`      | Name of the database to upload graph to                                                                                                                                            | None                                                                 |
+| Argument         | Description                                                                                                                                                                        | Default                                                              | Required |
+|------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------|----------|
+| `--techdoc_path` | Path to the compressed documentation file/s (.zip and .tar.xz compressed only), directory with already decompressed files or single file (supported document formats: .pdf, .docx) | None                                                                 | YES      |
+| `--plugin`       | Path to the text parsing plugin                                                                                                                                                    | src/plugins/default_plugin.py                                        | NO       |
+| `--only`         | Specifies actions which should be performed on input package                                                                                                                       | decompress decode information_extraction make_graph upload_graph     | NO       |
+| `--pipeline`     | Specifies actions which should be performed on preprocessed text in NLP step                                                                                                       | clean cross_coref tfidf tokenize content_filtering batch svo spo ner | NO       |
+| `--output`       | Specifies directory, where results should be saved. Has to be empty                                                                                                                | results                                                              | NO       |
+| `--tfidf`        | Specifies how many words to pick from TF-IDF results for topic modeling                                                                                                            | 5                                                                    | NO       |
+| `--db_name`      | Name of the database to upload graph to                                                                                                                                            | None                                                                 | NO       |
 
 
 Other options can be set via environment variables:
@@ -238,7 +243,7 @@ See the [Jira](https://samsung-kpz.atlassian.net/jira/software/c/projects/SAM/bo
 <!-- CONTACT -->
 ## Contact
 
-Project: [https://github.com/lukaszmichalskii/Samsung-KPZ](https://github.com/lukaszmichalskii/Samsung-KPZ)
+Project: [https://github.com/lukaszmichalskii/technical-documentation-analyzer](https://github.com/lukaszmichalskii/technical-documentation-analyzer)
 
 | Author             | Email                     |
 |--------------------|---------------------------|
@@ -249,22 +254,22 @@ Project: [https://github.com/lukaszmichalskii/Samsung-KPZ](https://github.com/lu
 
 
 ## Copyright
-Technical Documentation Analyzer (TDA) has a GNU license, as found in the [LICENSE](https://github.com/lukaszmichalskii/Samsung-KPZ/blob/master/LICENSE) file.
+Technical Documentation Analyzer (TDA) has a GNU license, as found in the [LICENSE](https://github.com/lukaszmichalskii/technical-documentation-analyzer/blob/master/LICENSE) file.
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/lukaszmichalskii/repo.svg?style=flat-square
-[contributors-url]: https://github.com/lukaszmichalskii/Samsung-KPZ/graphs/contributors
+[contributors-url]: https://github.com/lukaszmichalskii/technical-documentation-analyzer/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/lukaszmichalskii/repo.svg?style=flat-square
-[forks-url]: https://github.com/lukaszmichalskii/Samsung-KPZ/network/members
+[forks-url]: https://github.com/lukaszmichalskii/technical-documentation-analyzer/network/members
 [stars-shield]: https://img.shields.io/github/stars/lukaszmichalskii/repo.svg?style=flat-square
-[stars-url]: https://github.com/lukaszmichalskii/Samsung-KPZ/stargazers
+[stars-url]: https://github.com/lukaszmichalskii/technical-documentation-analyzer/stargazers
 [issues-shield]: https://img.shields.io/github/issues/lukaszmichalskii/repo.svg?style=flat-square
-[issues-url]: https://github.com/lukaszmichalskii/Samsung-KPZ/issues
+[issues-url]: https://github.com/lukaszmichalskii/technical-documentation-analyzer/issues
 [license-shield]: https://img.shields.io/badge/license-MIT-orange
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/in/lukasz-michalski-823106202/
 [jira-shield]: https://img.shields.io/badge/Jira-Join-blue
 [jira-url]: https://samsung-kpz.atlassian.net/jira/software/c/projects/SAM/boards/1
 [ci-shield]: https://img.shields.io/badge/CI-passing-green
-[ci-url]: https://github.com/lukaszmichalskii/Samsung-KPZ/actions/
+[ci-url]: https://github.com/lukaszmichalskii/technical-documentation-analyzer/actions/

@@ -161,7 +161,7 @@ def run_app(
             operating_system=environment.os,
         )
         for file in files_in_dir(decoded_path(output)):
-            with open(file) as fd:
+            with open(file, encoding="utf-8") as fd:
                 text = fd.read()
             filename = pathlib.Path(file)
             nlp_dir = nlp_path(output, subdir=filename.stem)
